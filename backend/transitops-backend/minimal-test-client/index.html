@@ -59,6 +59,9 @@
 <pre id="output">(nothing yet)</pre>
 
 <script>
+  // Auto-detect backend host based on the frontend's hostname
+  document.getElementById('apiBase').value = `http://${window.location.hostname || 'localhost'}:4000/api`;
+
   let token = '';
 
   function base() { return document.getElementById('apiBase').value; }
