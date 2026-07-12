@@ -31,15 +31,20 @@ enum VehicleType {
 enum DriverStatus {
   AVAILABLE
   ON_TRIP
+  OFF_DUTY
   SUSPENDED
+  LEAVE
+  EXPIRED_LICENSE
   INACTIVE
 }
 
 enum TripStatus {
   DRAFT
   DISPATCHED
+  IN_PROGRESS
   COMPLETED
   CANCELLED
+  DELAYED
 }
 
 model User {

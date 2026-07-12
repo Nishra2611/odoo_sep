@@ -1,4 +1,5 @@
 import { createContext, useContext, useState, useEffect, type ReactNode } from 'react'
+import { useAuth } from './AuthContext'
 import type { Vehicle, Driver, Trip, MaintenanceLog, SafetyIncident, FuelLog, Expense, ComplianceDocument, TripStatus, VehicleStatus, DriverStatus } from '@/types'
 import {
   VEHICLES as INITIAL_VEHICLES,
@@ -21,11 +22,11 @@ interface DataContextValue {
   fuelLogs: FuelLog[]
   expenses: Expense[]
   complianceDocuments: ComplianceDocument[]
-  
+
   // Helpers
   vehicleById: (id: string | null) => Vehicle | null
   driverById: (id: string | null) => Driver | null
-  
+
   // Actions
   addVehicle: (v: Omit<Vehicle, 'id' | 'status' | 'assignedDriverId' | 'odometerKm' | 'lastServiceDate' | 'gpsStatus' | 'riskScore'>) => void
   updateVehicle: (v: Vehicle) => void
@@ -47,6 +48,9 @@ interface DataContextValue {
 const DataContext = createContext<DataContextValue | undefined>(undefined)
 
 export function DataProvider({ children }: { children: ReactNode }) {
+  const { user } = useAuth()
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000/api'
+
   const [vehicles, setVehicles] = useState<Vehicle[]>(INITIAL_VEHICLES)
   const [drivers, setDrivers] = useState<Driver[]>(INITIAL_DRIVERS)
   const [trips, setTrips] = useState<Trip[]>(INITIAL_TRIPS)
@@ -55,6 +59,30 @@ export function DataProvider({ children }: { children: ReactNode }) {
   const [fuelLogs, setFuelLogs] = useState<FuelLog[]>(INITIAL_FUEL)
   const [expenses, setExpenses] = useState<Expense[]>(INITIAL_EXPENSES)
   const [complianceDocuments, setComplianceDocuments] = useState<ComplianceDocument[]>(INITIAL_COMPLIANCE)
+
+  const headers = {
+    'Content-Type': 'application/json',
+    Authorization: `Bearer ${user?.token}`
+  }
+
+  useEffect(() => {
+    if (!user?.token) return
+    async function fetchData() {
+      try {
+        const [vehRes, drvRes, trpRes] = await Promise.all([
+          fetch(`${API_URL}/vehicles`, { headers }),
+          fetch(`${API_URL}/drivers`, { headers }),
+          fetch(`${API_URL}/trips`, { headers }),
+        ])
+        if (vehRes.ok) setVehicles(await vehRes.json())
+        if (drvRes.ok) setDrivers(await drvRes.json())
+        if (trpRes.ok) setTrips(await trpRes.json())
+      } catch (err) {
+        console.error('Failed to fetch data from backend', err)
+      }
+    }
+    fetchData()
+  }, [user?.token])
 
   // Recalculates compliance document statuses whenever related dates change
   useEffect(() => {
@@ -129,10 +157,11 @@ export function DataProvider({ children }: { children: ReactNode }) {
   }
 
   // Vehicles CRUD
-  function addVehicle(v: Omit<Vehicle, 'id' | 'status' | 'assignedDriverId' | 'odometerKm' | 'lastServiceDate' | 'gpsStatus' | 'riskScore'>) {
+  async function addVehicle(v: Omit<Vehicle, 'id' | 'status' | 'assignedDriverId' | 'odometerKm' | 'lastServiceDate' | 'gpsStatus' | 'riskScore'>) {
+    const tempId = `veh-new-${Date.now()}`
     const newVehicle: Vehicle = {
       ...v,
-      id: `veh-new-${Date.now()}`,
+      id: tempId,
       status: 'AVAILABLE',
       assignedDriverId: null,
       odometerKm: 0,
@@ -141,23 +170,43 @@ export function DataProvider({ children }: { children: ReactNode }) {
       riskScore: 10,
     }
     setVehicles((vs) => [newVehicle, ...vs])
+
+    try {
+      const res = await fetch(`${API_URL}/vehicles`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(newVehicle)
+      })
+      if (!res.ok) throw new Error('Failed to create vehicle')
+      const created = await res.json()
+      setVehicles((vs) => vs.map((x) => (x.id === tempId ? created : x)))
+    } catch (err) {
+      console.error(err)
+      setVehicles((vs) => vs.filter((x) => x.id !== tempId))
+    }
   }
 
   function updateVehicle(v: Vehicle) {
     setVehicles((vs) => vs.map((x) => (x.id === v.id ? v : x)))
   }
 
-  function deleteVehicle(id: string) {
+  async function deleteVehicle(id: string) {
     // Unbind driver ref if dynamic deletion occurs
     setDrivers((ds) => ds.map((d) => (d.assignedVehicleId === id ? { ...d, assignedVehicleId: null } : d)))
     setVehicles((vs) => vs.filter((x) => x.id !== id))
+    try {
+      await fetch(`${API_URL}/vehicles/${id}`, { method: 'DELETE', headers })
+    } catch (err) {
+      console.error('Failed to delete vehicle', err)
+    }
   }
 
   // Drivers CRUD
-  function addDriver(d: Omit<Driver, 'id' | 'status' | 'assignedVehicleId' | 'safetyRating' | 'tripCompletionPct' | 'joinedDate' | 'certifications' | 'violationsCount' | 'attendancePct'>) {
+  async function addDriver(d: Omit<Driver, 'id' | 'status' | 'assignedVehicleId' | 'safetyRating' | 'tripCompletionPct' | 'joinedDate' | 'certifications' | 'violationsCount' | 'attendancePct'>) {
+    const tempId = `drv-new-${Date.now()}`
     const newDriver: Driver = {
       ...d,
-      id: `drv-new-${Date.now()}`,
+      id: tempId,
       status: 'AVAILABLE',
       assignedVehicleId: null,
       safetyRating: 4.5,
@@ -168,16 +217,35 @@ export function DataProvider({ children }: { children: ReactNode }) {
       attendancePct: 100,
     }
     setDrivers((ds) => [newDriver, ...ds])
+
+    try {
+      const res = await fetch(`${API_URL}/drivers`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(newDriver)
+      })
+      if (!res.ok) throw new Error('Failed to create driver')
+      const created = await res.json()
+      setDrivers((ds) => ds.map((x) => (x.id === tempId ? created : x)))
+    } catch (err) {
+      console.error(err)
+      setDrivers((ds) => ds.filter((x) => x.id !== tempId))
+    }
   }
 
   function updateDriver(d: Driver) {
     setDrivers((ds) => ds.map((x) => (x.id === d.id ? d : x)))
   }
 
-  function deleteDriver(id: string) {
+  async function deleteDriver(id: string) {
     // Unbind vehicle ref if driver is deleted
     setVehicles((vs) => vs.map((v) => (v.assignedDriverId === id ? { ...v, assignedDriverId: null } : v)))
     setDrivers((ds) => ds.filter((x) => x.id !== id))
+    try {
+      await fetch(`${API_URL}/drivers/${id}`, { method: 'DELETE', headers })
+    } catch (err) {
+      console.error('Failed to delete driver', err)
+    }
   }
 
   // Assign driver to vehicle (mutual logic)
@@ -214,15 +282,30 @@ export function DataProvider({ children }: { children: ReactNode }) {
   }
 
   // Trips CRUD & lifecycle
-  function createTrip(t: Omit<Trip, 'id' | 'tripCode' | 'status' | 'actualArrival'>) {
+  async function createTrip(t: Omit<Trip, 'id' | 'tripCode' | 'status' | 'actualArrival'>) {
+    const tempId = `trip-new-${Date.now()}`
     const newTrip: Trip = {
       ...t,
-      id: `trip-new-${Date.now()}`,
+      id: tempId,
       tripCode: `TRP-${2400 + trips.length + 1}`,
       status: 'DRAFT',
       actualArrival: null,
     }
     setTrips((ts) => [newTrip, ...ts])
+
+    try {
+      const res = await fetch(`${API_URL}/trips`, {
+        method: 'POST',
+        headers,
+        body: JSON.stringify(newTrip)
+      })
+      if (!res.ok) throw new Error('Failed to create trip')
+      const created = await res.json()
+      setTrips((ts) => ts.map((x) => (x.id === tempId ? created : x)))
+    } catch (err) {
+      console.error(err)
+      setTrips((ts) => ts.filter((x) => x.id !== tempId))
+    }
   }
 
   function moveTrip(tripId: string, target: TripStatus) {
