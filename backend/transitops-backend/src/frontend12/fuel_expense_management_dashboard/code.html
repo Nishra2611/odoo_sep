@@ -1,0 +1,460 @@
+<!DOCTYPE html><html lang="en" class="dark"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=block" rel="stylesheet"><script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script><script id="tailwind-config">try{
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "tertiary-fixed": "#cae6ff",
+                        "inverse-on-surface": "#2f3131",
+                        "surface-bright": "#383939",
+                        "on-secondary-fixed-variant": "#005228",
+                        "secondary-fixed-dim": "#4ae183",
+                        "error": "#ffb4ab",
+                        "on-tertiary": "#00344f",
+                        "surface-tint": "#ffb866",
+                        "secondary": "#4ae183",
+                        "on-tertiary-fixed": "#001e30",
+                        "outline-variant": "#534435",
+                        "surface-container-highest": "#343535",
+                        "on-primary-fixed": "#2b1700",
+                        "primary": "#ffb866",
+                        "tertiary-container": "#2299da",
+                        "background": "#121414",
+                        "on-tertiary-container": "#002d45",
+                        "surface-container-low": "#1a1c1c",
+                        "outline": "#a08e7c",
+                        "secondary-container": "#06bb63",
+                        "on-primary-container": "#3f2300",
+                        "tertiary-fixed-dim": "#8dcdff",
+                        "error-container": "#93000a",
+                        "on-secondary-container": "#00431f",
+                        "inverse-primary": "#875200",
+                        "surface-dim": "#121414",
+                        "on-error-container": "#ffdad6",
+                        "primary-fixed-dim": "#ffb866",
+                        "on-primary": "#482900",
+                        "on-secondary-fixed": "#00210c",
+                        "surface-container-lowest": "#0d0e0f",
+                        "surface": "#121414",
+                        "on-background": "#e3e2e2",
+                        "on-secondary": "#003919",
+                        "on-primary-fixed-variant": "#673d00",
+                        "surface-variant": "#343535",
+                        "on-surface-variant": "#d8c3af",
+                        "tertiary": "#8dcdff",
+                        "on-error": "#690005",
+                        "on-tertiary-fixed-variant": "#004b70",
+                        "surface-container-high": "#292a2a",
+                        "primary-fixed": "#ffddba",
+                        "primary-container": "#cc7f0a",
+                        "surface-container": "#1e2020",
+                        "on-surface": "#e3e2e2",
+                        "secondary-fixed": "#6bfe9c",
+                        "inverse-surface": "#e3e2e2"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "12px",
+                        "xl": "12px",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "lg": "24px",
+                        "margin-desktop": "32px",
+                        "base": "4px",
+                        "margin-mobile": "16px",
+                        "gutter": "20px",
+                        "xl": "32px",
+                        "sm": "12px",
+                        "xs": "8px",
+                        "md": "16px"
+                    },
+                    "fontFamily": {
+                        "label-md": ["Inter"],
+                        "body-md": ["Inter"],
+                        "headline-md": ["Inter"],
+                        "body-lg": ["Inter"],
+                        "headline-lg-mobile": ["Inter"],
+                        "headline-lg": ["Inter"],
+                        "label-sm": ["Inter"]
+                    },
+                    "fontSize": {
+                        "label-md": ["12px", {"lineHeight": "16px", "letterSpacing": "0.01em", "fontWeight": "500"}],
+                        "body-md": ["14px", {"lineHeight": "20px", "fontWeight": "400"}],
+                        "headline-md": ["20px", {"lineHeight": "28px", "fontWeight": "600"}],
+                        "body-lg": ["16px", {"lineHeight": "24px", "fontWeight": "400"}],
+                        "headline-lg-mobile": ["24px", {"lineHeight": "32px", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+                        "headline-lg": ["32px", {"lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "600"}],
+                        "label-sm": ["11px", {"lineHeight": "14px", "letterSpacing": "0.03em", "fontWeight": "600"}]
+                    }
+                },
+            },
+        }
+    }catch(_e){}</script><meta charset="utf-8"></head><body class="overflow-hidden">
+<!-- SideNavBar Shell -->
+<aside class="fixed left-0 top-0 h-full flex flex-col p-md z-50 bg-surface-container-low dark:bg-surface-container-low border-r border-outline-variant dark:border-outline-variant w-[280px] hidden md:flex">
+<div class="mb-xl px-sm flex items-center gap-md">
+<div class="w-10 h-10 rounded-lg bg-primary-container flex items-center justify-center">
+<span class="material-symbols-outlined text-on-primary-container">local_shipping</span>
+</div>
+<div>
+<h1 class="font-headline-md text-headline-md font-extrabold text-primary dark:text-primary">Logistics Pro</h1>
+<p class="font-label-md text-label-md text-on-surface-variant">Fleet Management</p>
+</div>
+</div>
+<nav class="flex-1 space-y-xs overflow-y-auto custom-scrollbar"><a class="flex items-center gap-md px-md py-sm font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-highest transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">dashboard</span> Dashboard
+            </a>
+<a class="flex items-center gap-md px-md py-sm font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-highest transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">local_shipping</span> Fleet
+            </a>
+<a class="flex items-center gap-md px-md py-sm font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-highest transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">person</span> Drivers
+            </a>
+<a class="flex items-center gap-md px-md py-sm font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-highest transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">route</span> Trips
+            </a>
+<a class="flex items-center gap-md px-md py-sm font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-highest transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">build</span> Maintenance
+            </a>
+<a class="flex items-center gap-md px-md py-sm font-label-md text-label-md bg-secondary-container text-on-secondary-container rounded-lg transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">local_gas_station</span> Fuel and Expenses
+            </a>
+<a class="flex items-center gap-md px-md py-sm font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-highest transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">analytics</span> Analytics
+            </a>
+<a class="flex items-center gap-md px-md py-sm font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-highest transition-all duration-200 ease-in-out" href="#">
+<span class="material-symbols-outlined">settings</span> Settings
+            </a></nav>
+<div class="mt-auto pt-md border-t border-outline-variant space-y-xs">
+<a href="#" class="flex items-center gap-md px-md py-sm font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-highest transition-all duration-200 ease-in-out">
+<span class="material-symbols-outlined">help</span> Support
+            </a>
+<a href="#" class="flex items-center gap-md px-md py-sm font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-highest transition-all duration-200 ease-in-out">
+<span class="material-symbols-outlined">logout</span> Logout
+            </a>
+</div>
+</aside>
+<!-- Main Content Area -->
+<main class="md:ml-[280px] h-screen flex flex-col relative bg-[#111111]">
+<!-- TopNavBar Shell -->
+<header class="flex justify-between items-center h-16 px-margin-desktop w-full sticky top-0 z-40 bg-surface dark:bg-surface border-b border-outline-variant dark:border-outline-variant">
+<div class="flex items-center gap-xl flex-1">
+<span class="font-headline-md text-headline-md font-bold text-primary dark:text-primary">Transport Command</span>
+<div class="relative w-full max-w-md ml-lg">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-body-md">search</span>
+<input type="text" id="global-search" placeholder="Search by Vehicle or ID..." class="w-full bg-surface-container-low border border-outline-variant rounded-full py-2 pl-10 pr-4 text-body-md text-on-surface focus:outline-none focus:border-primary transition-colors">
+</div>
+</div>
+<div class="flex items-center gap-md">
+<button class="p-2 rounded-full hover:bg-surface-container-high transition-colors active:scale-95">
+<span class="material-symbols-outlined text-primary">notifications</span>
+</button>
+<button class="p-2 rounded-full hover:bg-surface-container-high transition-colors active:scale-95">
+<span class="material-symbols-outlined text-primary">settings</span>
+</button>
+<div class="h-8 w-px bg-outline-variant mx-2"></div>
+<button class="px-md py-2 bg-primary-container text-on-primary-container rounded-lg font-label-md text-label-md font-bold transition-transform active:scale-95">
+                    Dispatch
+                </button>
+<img class="w-10 h-10 rounded-full border border-outline-variant ml-2 object-cover" data-alt="Close up professional portrait of a fleet logistics manager in a modern office, wearing a headset, blurred server room background with blue and orange ambient lighting, cinematic photography style." src="https://lh3.googleusercontent.com/aida-public/AB6AXuBB1b-bniM6DjLIZMag91FKk5ElxOZcecO8LA6qsOEFUXlom6e9T_l-_5Xv0a7q5yGJWQ7z6mjA6WYR-GH8XtNgZUDkQ1ZqeoGNIDLq3hhAi-ejKBuJdugPixKIPNgsi0rMBkkDfMhHanl_eNYng-XKz0p3UxxJAb6KxrlzpKilrjIj-1caMaMvApCA2h0MfDBTw7Z2-XZ1vQs-gKWTYiZyPSCgEHfyJmHkV0eVG_mXmV8kHxikpmgA">
+</div>
+</header>
+<!-- Scrollable Canvas -->
+<div class="flex-1 overflow-y-auto p-margin-desktop custom-scrollbar pb-32">
+<!-- Page Header Area -->
+<div class="flex flex-col md:flex-row md:items-center justify-between mb-xl gap-md">
+<div>
+<h2 class="font-headline-lg text-headline-lg text-on-surface tracking-tight">Fuel &amp; Expense Management</h2>
+<p class="font-body-md text-body-md text-on-surface-variant mt-xs">Real-time monitoring of operational costs and fleet efficiency.</p>
+</div>
+<div class="flex items-center gap-md">
+<button class="flex items-center gap-xs px-lg py-sm bg-primary text-on-primary rounded-lg font-label-md text-label-md font-bold transition-all hover:brightness-110 active:scale-95" onclick="openModal('fuel-modal')">
+<span class="material-symbols-outlined text-[18px]">local_gas_station</span>
+                        + Log Fuel
+                    </button>
+<button class="flex items-center gap-xs px-lg py-sm bg-secondary-container text-on-secondary-container rounded-lg font-label-md text-label-md font-bold transition-all hover:brightness-110 active:scale-95 border border-outline-variant" onclick="openModal('expense-modal')">
+<span class="material-symbols-outlined text-[18px]">receipt_long</span>
+                        + Add Expense
+                    </button>
+</div>
+</div>
+<!-- Dashboard Sections Grid -->
+<div class="grid grid-cols-1 gap-xl">
+<!-- Section 1: Fuel Logs -->
+<section class="bg-surface-container-low border border-outline-variant rounded-lg overflow-hidden">
+<div class="px-xl py-md border-b border-outline-variant flex items-center justify-between">
+<h3 class="font-headline-md text-headline-md text-on-surface flex items-center gap-sm">
+<span class="material-symbols-outlined text-primary" data-original-icon="fuel_cassette">circle</span> Fuel Logs
+                        </h3>
+<span class="px-sm py-1 bg-surface-container-high rounded text-label-sm text-on-surface-variant border border-outline-variant">Last 30 Days</span>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left" id="fuel-table">
+<thead class="bg-surface-container-high">
+<tr>
+<th class="px-xl py-sm font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant">Vehicle</th>
+<th class="px-xl py-sm font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant">Date</th>
+<th class="px-xl py-sm font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant">Liters</th>
+<th class="px-xl py-sm font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant">Fuel Cost</th>
+<th class="px-xl py-sm font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant text-right">Actions</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant">
+<tr class="table-row-hover transition-colors">
+<td class="px-xl py-md font-body-md text-body-md text-on-surface">VAN-05</td>
+<td class="px-xl py-md font-body-md text-body-md text-on-surface-variant">05 Jul 2026</td>
+<td class="px-xl py-md font-body-md text-body-md text-on-surface">42 L</td>
+<td class="px-xl py-md font-body-md text-body-md font-bold text-primary">₹3,150</td>
+<td class="px-xl py-md text-right"><button class="text-on-surface-variant hover:text-primary transition-colors"><span class="material-symbols-outlined">more_vert</span></button></td>
+</tr>
+<tr class="table-row-hover transition-colors">
+<td class="px-xl py-md font-body-md text-body-md text-on-surface">TRUCK-11</td>
+<td class="px-xl py-md font-body-md text-body-md text-on-surface-variant">06 Jul 2026</td>
+<td class="px-xl py-md font-body-md text-body-md text-on-surface">110 L</td>
+<td class="px-xl py-md font-body-md text-body-md font-bold text-primary">₹8,400</td>
+<td class="px-xl py-md text-right"><button class="text-on-surface-variant hover:text-primary transition-colors"><span class="material-symbols-outlined">more_vert</span></button></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<!-- Section 2: Other Expenses -->
+<section class="bg-surface-container-low border border-outline-variant rounded-lg overflow-hidden">
+<div class="px-xl py-md border-b border-outline-variant">
+<h3 class="font-headline-md text-headline-md text-on-surface flex items-center gap-sm">
+<span class="material-symbols-outlined text-secondary">payments</span> Other Expenses (Toll / Misc)
+                        </h3>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left" id="expense-table">
+<thead class="bg-surface-container-high">
+<tr>
+<th class="px-xl py-sm font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant">Trip ID</th>
+<th class="px-xl py-sm font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant">Vehicle</th>
+<th class="px-xl py-sm font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant">Toll</th>
+<th class="px-xl py-sm font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant">Other</th>
+<th class="px-xl py-sm font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant">Maintenance Claimed</th>
+<th class="px-xl py-sm font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant">Status</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant">
+<tr class="table-row-hover transition-colors">
+<td class="px-xl py-md font-body-md text-body-md text-on-surface">#TRP-9821</td>
+<td class="px-xl py-md font-body-md text-body-md text-on-surface">VAN-05</td>
+<td class="px-xl py-md font-body-md text-body-md text-on-surface">₹450</td>
+<td class="px-xl py-md font-body-md text-body-md text-on-surface">₹120</td>
+<td class="px-xl py-md font-body-md text-body-md text-on-surface">No</td>
+<td class="px-xl py-md">
+<span class="px-md py-1 bg-secondary-container/20 text-on-secondary-fixed-variant rounded-full text-label-sm font-bold border border-secondary-container/40">Available</span>
+</td>
+</tr>
+<tr class="table-row-hover transition-colors">
+<td class="px-xl py-md font-body-md text-body-md text-on-surface">#TRP-9833</td>
+<td class="px-xl py-md font-body-md text-body-md text-on-surface">TRUCK-11</td>
+<td class="px-xl py-md font-body-md text-body-md text-on-surface">₹1,200</td>
+<td class="px-xl py-md font-body-md text-body-md text-on-surface">₹300</td>
+<td class="px-xl py-md font-body-md text-body-md text-on-surface">Yes (₹1,500)</td>
+<td class="px-xl py-md">
+<span class="px-md py-1 bg-on-secondary/30 text-secondary-fixed-dim rounded-full text-label-sm font-bold border border-on-secondary/50">Completed</span>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+</div>
+</div>
+<!-- Sticky Footer Summary -->
+<footer class="fixed bottom-0 left-0 md:left-[280px] right-0 h-20 bg-surface-container-high border-t border-outline-variant z-40 flex items-center px-margin-desktop shadow-2xl">
+<div class="flex items-center justify-between w-full">
+<div class="flex items-center gap-md">
+<div class="p-2 rounded bg-surface-container-highest">
+<span class="material-symbols-outlined text-primary">analytics</span>
+</div>
+<div>
+<p class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wide">Aggregate Expenditure</p>
+<h4 class="font-body-md text-body-md text-on-surface">Total Operational Cost (Auto) = Fuel + Maintenance</h4>
+</div>
+</div>
+<div class="text-right">
+<span class="font-headline-lg text-headline-lg text-primary" id="total-cost">₹34,070</span>
+</div>
+</div>
+</footer>
+<!-- Modal: Log Fuel -->
+<div class="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] hidden items-center justify-center p-md" id="fuel-modal">
+<div class="bg-surface-container border border-outline-variant rounded-xl w-full max-w-lg overflow-hidden shadow-2xl animate-in fade-in zoom-in duration-200">
+<div class="px-xl py-lg border-b border-outline-variant flex justify-between items-center bg-surface-container-low">
+<h3 class="font-headline-md text-headline-md text-on-surface">Log Fuel Transaction</h3>
+<button class="p-2 hover:bg-surface-container-high rounded-full transition-colors" onclick="closeModal('fuel-modal')"><span class="material-symbols-outlined">close</span></button>
+</div>
+<form class="p-xl space-y-lg" id="fuel-form">
+<div class="grid grid-cols-2 gap-md">
+<div class="space-y-base">
+<label class="font-label-md text-label-md text-on-surface-variant">Vehicle</label>
+<select class="w-full bg-surface-container-low border border-outline-variant rounded-lg p-sm text-on-surface focus:border-primary" name="vehicle">
+<option>VAN-05</option>
+<option>TRUCK-11</option>
+<option>TRUCK-14</option>
+</select>
+</div>
+<div class="space-y-base">
+<label class="font-label-md text-label-md text-on-surface-variant">Date</label>
+<input class="w-full bg-surface-container-low border border-outline-variant rounded-lg p-sm text-on-surface focus:border-primary" name="date" type="date">
+</div>
+</div>
+<div class="grid grid-cols-2 gap-md">
+<div class="space-y-base">
+<label class="font-label-md text-label-md text-on-surface-variant">Liters</label>
+<input class="w-full bg-surface-container-low border border-outline-variant rounded-lg p-sm text-on-surface focus:border-primary" name="liters" placeholder="e.g. 50" type="number">
+</div>
+<div class="space-y-base">
+<label class="font-label-md text-label-md text-on-surface-variant">Cost (₹)</label>
+<input class="w-full bg-surface-container-low border border-outline-variant rounded-lg p-sm text-on-surface focus:border-primary" name="cost" placeholder="e.g. 4500" type="number">
+</div>
+</div>
+<div class="pt-md flex justify-end gap-md">
+<button class="px-lg py-sm border border-outline-variant rounded-lg font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-high" onclick="closeModal('fuel-modal')" type="button">Cancel</button>
+<button class="px-lg py-sm bg-primary text-on-primary rounded-lg font-label-md text-label-md font-bold hover:brightness-110" type="submit">Save Log</button>
+</div>
+</form>
+</div>
+</div>
+<!-- Modal: Add Expense -->
+<div class="fixed inset-0 bg-black/80 backdrop-blur-sm z-[100] hidden items-center justify-center p-md" id="expense-modal">
+<div class="bg-surface-container border border-outline-variant rounded-xl w-full max-w-lg overflow-hidden shadow-2xl">
+<div class="px-xl py-lg border-b border-outline-variant flex justify-between items-center bg-surface-container-low">
+<h3 class="font-headline-md text-headline-md text-on-surface">Record Trip Expense</h3>
+<button class="p-2 hover:bg-surface-container-high rounded-full transition-colors" onclick="closeModal('expense-modal')"><span class="material-symbols-outlined">close</span></button>
+</div>
+<form class="p-xl space-y-lg" id="expense-form">
+<div class="grid grid-cols-2 gap-md">
+<div class="space-y-base">
+<label class="font-label-md text-label-md text-on-surface-variant">Trip ID</label>
+<input class="w-full bg-surface-container-low border border-outline-variant rounded-lg p-sm text-on-surface focus:border-primary" name="trip_id" placeholder="#TRP-XXXX" type="text">
+</div>
+<div class="space-y-base">
+<label class="font-label-md text-label-md text-on-surface-variant">Vehicle</label>
+<select class="w-full bg-surface-container-low border border-outline-variant rounded-lg p-sm text-on-surface focus:border-primary" name="vehicle">
+<option>VAN-05</option>
+<option>TRUCK-11</option>
+</select>
+</div>
+</div>
+<div class="grid grid-cols-3 gap-md">
+<div class="space-y-base">
+<label class="font-label-md text-label-md text-on-surface-variant">Toll (₹)</label>
+<input class="w-full bg-surface-container-low border border-outline-variant rounded-lg p-sm text-on-surface focus:border-primary" name="toll" type="number">
+</div>
+<div class="space-y-base">
+<label class="font-label-md text-label-md text-on-surface-variant">Other (₹)</label>
+<input class="w-full bg-surface-container-low border border-outline-variant rounded-lg p-sm text-on-surface focus:border-primary" name="other" type="number">
+</div>
+<div class="space-y-base">
+<label class="font-label-md text-label-md text-on-surface-variant">Maintenance (₹)</label>
+<input class="w-full bg-surface-container-low border border-outline-variant rounded-lg p-sm text-on-surface focus:border-primary" name="maint" type="number">
+</div>
+</div>
+<div class="pt-md flex justify-end gap-md">
+<button class="px-lg py-sm border border-outline-variant rounded-lg font-label-md text-label-md text-on-surface-variant hover:bg-surface-container-high" onclick="closeModal('expense-modal')" type="button">Cancel</button>
+<button class="px-lg py-sm bg-secondary-container text-on-secondary-container rounded-lg font-label-md text-label-md font-bold hover:brightness-110" type="submit">Save Expense</button>
+</div>
+</form>
+</div>
+</div>
+</main>
+<script>
+        // Modal State Management
+        function openModal(id) {
+            const modal = document.getElementById(id);
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+        }
+
+        function closeModal(id) {
+            const modal = document.getElementById(id);
+            modal.classList.remove('flex');
+            modal.classList.add('hidden');
+        }
+
+        // Global Search State
+        const searchInput = document.getElementById('global-search');
+        searchInput.addEventListener('input', (e) => {
+            const term = e.target.value.toLowerCase();
+            const rows = document.querySelectorAll('tbody tr');
+            
+            rows.forEach(row => {
+                const text = row.innerText.toLowerCase();
+                if (text.includes(term)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        });
+
+        // Form Submission & Table State Update
+        const fuelForm = document.getElementById('fuel-form');
+        fuelForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const formData = new FormData(fuelForm);
+            const vehicle = formData.get('vehicle');
+            const date = formData.get('date') || new Date().toLocaleDateString();
+            const liters = formData.get('liters');
+            const cost = parseInt(formData.get('cost')) || 0;
+
+            const tbody = document.querySelector('#fuel-table tbody');
+            const newRow = document.createElement('tr');
+            newRow.className = 'table-row-hover transition-colors';
+            newRow.innerHTML = `
+                <td class="px-xl py-md font-body-md text-body-md text-on-surface">${vehicle}</td>
+                <td class="px-xl py-md font-body-md text-body-md text-on-surface-variant">${date}</td>
+                <td class="px-xl py-md font-body-md text-body-md text-on-surface">${liters} L</td>
+                <td class="px-xl py-md font-body-md text-body-md font-bold text-primary">₹${cost.toLocaleString()}</td>
+                <td class="px-xl py-md text-right"><button class="text-on-surface-variant hover:text-primary transition-colors"><span class="material-symbols-outlined">more_vert</span></button></td>
+            `;
+            tbody.prepend(newRow);
+            updateTotal(cost);
+            closeModal('fuel-modal');
+            fuelForm.reset();
+        });
+
+        const expenseForm = document.getElementById('expense-form');
+        expenseForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const formData = new FormData(expenseForm);
+            const tripId = formData.get('trip_id') || '#TRP-0000';
+            const vehicle = formData.get('vehicle');
+            const toll = parseInt(formData.get('toll')) || 0;
+            const other = parseInt(formData.get('other')) || 0;
+            const maint = parseInt(formData.get('maint')) || 0;
+
+            const tbody = document.querySelector('#expense-table tbody');
+            const newRow = document.createElement('tr');
+            newRow.className = 'table-row-hover transition-colors';
+            newRow.innerHTML = `
+                <td class="px-xl py-md font-body-md text-body-md text-on-surface">${tripId}</td>
+                <td class="px-xl py-md font-body-md text-body-md text-on-surface">${vehicle}</td>
+                <td class="px-xl py-md font-body-md text-body-md text-on-surface">₹${toll.toLocaleString()}</td>
+                <td class="px-xl py-md font-body-md text-body-md text-on-surface">₹${other.toLocaleString()}</td>
+                <td class="px-xl py-md font-body-md text-body-md text-on-surface">${maint > 0 ? 'Yes (₹'+maint.toLocaleString()+')' : 'No'}</td>
+                <td class="px-xl py-md">
+                    <span class="px-md py-1 bg-secondary-container/20 text-on-secondary-fixed-variant rounded-full text-label-sm font-bold border border-secondary-container/40">Available</span>
+                </td>
+            `;
+            tbody.prepend(newRow);
+            updateTotal(toll + other + maint);
+            closeModal('expense-modal');
+            expenseForm.reset();
+        });
+
+        function updateTotal(amount) {
+            const totalEl = document.getElementById('total-cost');
+            let currentTotal = parseInt(totalEl.innerText.replace('₹', '').replace(',', ''));
+            currentTotal += amount;
+            totalEl.innerText = `₹${currentTotal.toLocaleString()}`;
+        }
+    </script>
+
+</body></html>
