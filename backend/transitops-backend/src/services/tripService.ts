@@ -40,9 +40,9 @@ export async function createTrip(input: CreateTripInput) {
   const vehicle = await prisma.vehicle.findUnique({ where: { id: input.vehicleId } });
   if (!vehicle) throw new AppError('Vehicle not found', 404);
 
-  if (input.cargoWeightKg > vehicle.loadCapacityKg) {
+  if (input.cargoWeightKg > vehicle.capacityKg) {
     throw new AppError(
-      `Cargo weight (${input.cargoWeightKg}kg) exceeds vehicle load capacity (${vehicle.loadCapacityKg}kg)`,
+      `Cargo weight (${input.cargoWeightKg}kg) exceeds vehicle load capacity (${vehicle.capacityKg}kg)`,
       400
     );
   }
@@ -91,7 +91,7 @@ export async function dispatchTrip(tripId: string) {
 
     // Rule: cargo weight must not exceed vehicle capacity (re-checked here
     // in case vehicle capacity was edited after the trip was drafted)
-    if (trip.cargoWeightKg > vehicle.loadCapacityKg) {
+    if (trip.cargoWeightKg > vehicle.capacityKg) {
       throw new AppError('Cargo weight exceeds vehicle load capacity', 400);
     }
 
