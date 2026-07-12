@@ -14,3 +14,5 @@ router.patch('/:id', authenticate, authorize(MANAGE_ROLES), vehicleController.up
 router.delete('/:id', authenticate, authorize(MANAGE_ROLES), vehicleController.remove);
 
 export default router;
+
+
