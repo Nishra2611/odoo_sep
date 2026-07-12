@@ -43,6 +43,59 @@ export async function login(email: string, password: string) {
   return { token, user: { id: user.id, name: user.name, email: user.email, role: user.role } };
 }
 
+export async function loginWithGoogle(accessToken: string, role: string) {
+  // Fetch user info from Google using the access token
+  const response = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+    headers: { Authorization: `Bearer ${accessToken}` },
+  });
+
+  if (!response.ok) {
+    throw new AppError('Invalid Google access token', 401);
+  }
+
+  const googleUser = await response.json();
+  const email = googleUser.email;
+  const name = googleUser.name || 'Google User';
+  const googleId = googleUser.sub;
+
+  if (!email) throw new AppError('Google account has no email', 400);
+
+  // Check if user exists
+  let user = await prisma.user.findFirst({ where: { email } });
+
+  if (!user) {
+    user = await prisma.user.create({
+      data: { name, email, role: role as any, authProvider: 'GOOGLE', googleId },
+    });
+
+    if (role === 'DRIVER') {
+      await prisma.driver.create({
+        data: {
+          userId: user.id,
+          name,
+          licenseNumber: `PENDING-${user.id.slice(0, 8)}`,
+          licenseExpiry: new Date(),
+          contact: 'PENDING',
+        },
+      });
+    }
+  } else {
+    // If user exists but used local auth before, link googleId if missing
+    if (!user.googleId) {
+      user = await prisma.user.update({
+        where: { id: user.id },
+        data: { googleId, authProvider: 'GOOGLE' },
+      });
+    }
+    if (user.role !== role) {
+      throw new AppError(`Account role mismatch. Expected ${role}.`, 403);
+    }
+  }
+
+  const token = signToken({ userId: user.id, role: user.role });
+  return { token, user: { id: user.id, name: user.name, email: user.email, role: user.role } };
+}
+
 export async function getMe(userId: string) {
   const user = await prisma.user.findUnique({
     where: { id: userId },

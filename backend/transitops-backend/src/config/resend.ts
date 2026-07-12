@@ -7,7 +7,7 @@ if (!RESEND_API_KEY) {
   console.warn('[resend.config] RESEND_API_KEY is not set. Emails will fail to send.');
 }
 
-export const resendClient = new Resend(RESEND_API_KEY ?? '');
+export const resendClient = new Resend(RESEND_API_KEY || 're_dummy_key_to_prevent_crash');
 
 export const RESEND_FROM_EMAIL =
   process.env.RESEND_FROM_EMAIL ?? 'TransitOps <notifications@transitops.example.com>';
