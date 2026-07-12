@@ -7,6 +7,7 @@ interface AuthContextValue {
   loading: boolean
   error: string | null
   login: (email: string, password: string, role: Role) => Promise<boolean>
+  signup: (name: string, email: string, password: string, role: Role) => Promise<boolean>
   loginWithGoogle: (accessToken: string, role: Role) => Promise<boolean>
   logout: () => void
   updateProfile: (name: string, email: string) => void
@@ -32,6 +33,34 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [])
 
   const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000/api'
+
+  async function signup(name: string, email: string, password: string, role: Role): Promise<boolean> {
+    setLoading(true)
+    setError(null)
+    try {
+      const res = await fetch(`${API_URL}/auth/signup`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, password, role }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Signup failed')
+
+      const sessionUser: User = {
+        ...data.user,
+        avatarInitials: initials(data.user.name),
+        token: data.token
+      }
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(sessionUser))
+      setUser(sessionUser)
+      return true
+    } catch (err: any) {
+      setError(err.message)
+      return false
+    } finally {
+      setLoading(false)
+    }
+  }
 
   async function login(email: string, password: string, role: Role): Promise<boolean> {
     setLoading(true)
@@ -107,7 +136,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(updated)
   }
 
-  const value = useMemo(() => ({ user, loading, error, login, loginWithGoogle, logout, updateProfile }), [user, loading, error])
+  const value = useMemo(() => ({ user, loading, error, login, signup, loginWithGoogle, logout, updateProfile }), [user, loading, error])
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }

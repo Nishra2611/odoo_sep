@@ -1,7 +1,7 @@
 import type { FormEvent } from 'react'
 import { useState } from 'react'
 import { Navigate, useNavigate, Link } from 'react-router-dom'
-import { Truck, Mail, Lock, Eye, EyeOff } from 'lucide-react'
+import { Truck, Mail, Lock, Eye, EyeOff, User as UserIcon } from 'lucide-react'
 import { useAuth } from '@/context/AuthContext'
 import { useGoogleLogin } from '@react-oauth/google'
 import { Input } from '@/components/ui/Input'
@@ -11,8 +11,10 @@ import { ROLE_LABELS, DEMO_ACCOUNTS } from '@/lib/constants'
 import type { Role } from '@/types'
 
 export function LoginPage() {
-  const { user, login, loginWithGoogle, loading, error } = useAuth()
+  const { user, login, signup, loginWithGoogle, loading, error } = useAuth()
   const navigate = useNavigate()
+  const [isSignUp, setIsSignUp] = useState(false)
+  const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [role, setRole] = useState<Role>('FLEET_MANAGER')
@@ -23,8 +25,13 @@ export function LoginPage() {
 
   async function handleSubmit(e: FormEvent) {
     e.preventDefault()
-    const ok = await login(email, password, role)
-    if (ok) navigate('/dashboard')
+    if (isSignUp) {
+      const ok = await signup(name, email, password, role)
+      if (ok) navigate('/dashboard')
+    } else {
+      const ok = await login(email, password, role)
+      if (ok) navigate('/dashboard')
+    }
   }
 
   const handleGoogle = useGoogleLogin({
@@ -69,10 +76,21 @@ export function LoginPage() {
             <span className="font-display text-lg font-semibold text-ink">TransitOps</span>
           </div>
 
-          <h1 className="font-display text-xl font-semibold text-ink">Sign in to your console</h1>
-          <p className="mt-1 text-sm text-slate-500">Enter your credentials to access your fleet workspace.</p>
+          <h1 className="font-display text-xl font-semibold text-ink">{isSignUp ? 'Create your console account' : 'Sign in to your console'}</h1>
+          <p className="mt-1 text-sm text-slate-500">{isSignUp ? 'Sign up to start managing your fleet workspace.' : 'Enter your credentials to access your fleet workspace.'}</p>
 
           <form onSubmit={handleSubmit} className="mt-6 flex flex-col gap-4">
+            {isSignUp && (
+              <Input
+                label="Full Name"
+                type="text"
+                placeholder="Jane Doe"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required={isSignUp}
+              />
+            )}
+
             <Select label="Role" value={role} onChange={(e) => setRole(e.target.value as Role)}>
               {Object.entries(ROLE_LABELS).map(([value, label]) => (
                 <option key={value} value={value}>
@@ -116,15 +134,17 @@ export function LoginPage() {
                 <input type="checkbox" checked={remember} onChange={(e) => setRemember(e.target.checked)} className="h-3.5 w-3.5 rounded border-slate-300" />
                 Remember me
               </label>
-              <Link to="/forgot-password" className="text-xs font-medium text-route hover:underline">
-                Forgot password?
-              </Link>
+              {!isSignUp && (
+                <Link to="/forgot-password" className="text-xs font-medium text-route hover:underline">
+                  Forgot password?
+                </Link>
+              )}
             </div>
 
             {error && <p className="rounded-lg bg-alert-soft px-3 py-2 text-xs text-alert">{error}</p>}
 
             <Button type="submit" loading={loading} className="mt-1">
-              <Mail className="h-3.5 w-3.5" /> Sign in
+              {isSignUp ? <UserIcon className="h-3.5 w-3.5" /> : <Mail className="h-3.5 w-3.5" />} {isSignUp ? 'Sign up' : 'Sign in'}
             </Button>
 
             <div className="flex items-center gap-3 text-[11px] text-slate-400">
@@ -134,6 +154,17 @@ export function LoginPage() {
             <Button type="button" variant="outline" onClick={() => handleGoogle()} loading={loading}>
               Continue with Google
             </Button>
+
+            <div className="mt-4 text-center text-sm text-slate-500">
+              {isSignUp ? 'Already have an account?' : "Don't have an account?"}{' '}
+              <button
+                type="button"
+                onClick={() => setIsSignUp(!isSignUp)}
+                className="font-medium text-route hover:underline"
+              >
+                {isSignUp ? 'Sign in' : 'Sign up'}
+              </button>
+            </div>
           </form>
 
           <div className="mt-6 rounded-lg border border-slate-200 bg-slate-50/60 p-3">
