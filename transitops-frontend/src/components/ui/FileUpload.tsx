@@ -62,7 +62,9 @@ export function FileUpload({ label = 'Drag & drop files here, or click to browse
               <button
                 onClick={(e) => {
                   e.stopPropagation()
-                  setFiles((prev) => prev.filter((_, idx) => idx !== i))
+                  const updated = files.filter((_, idx) => idx !== i)
+                  setFiles(updated)
+                  onFilesSelected?.(updated)
                 }}
                 aria-label={`Remove ${f.name}`}
               >

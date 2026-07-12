@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Sun, Moon, ShieldCheck, Bell, Building2, Users, ScrollText, Plug, KeyRound } from 'lucide-react'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/Card'
 import { Tabs } from '@/components/ui/Tabs'
@@ -26,11 +26,49 @@ const SECTIONS = [
 ]
 
 export function SettingsPage() {
-  const { user } = useAuth()
+  const { user, updateProfile } = useAuth()
   const { theme, toggle } = useTheme()
   const { push } = useToast()
   const [section, setSection] = useState('profile')
   const [notifPrefs, setNotifPrefs] = useState({ email: true, sms: false, expiryAlerts: true, dispatchAlerts: true })
+
+  const [name, setName] = useState(user?.name ?? '')
+  const [email, setEmail] = useState(user?.email ?? '')
+
+  const [currentPassword, setCurrentPassword] = useState('')
+  const [newPassword, setNewPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+
+  useEffect(() => {
+    if (user) {
+      setName(user.name)
+      setEmail(user.email)
+    }
+  }, [user])
+
+  function handleSaveProfile() {
+    if (!name.trim() || !email.trim()) {
+      push('Name and email are required', 'error')
+      return
+    }
+    updateProfile(name, email)
+    push('Profile changes saved')
+  }
+
+  function handleUpdatePassword() {
+    if (!currentPassword || !newPassword || !confirmPassword) {
+      push('All fields are required', 'error')
+      return
+    }
+    if (newPassword !== confirmPassword) {
+      push('New passwords do not match', 'error')
+      return
+    }
+    push('Password updated successfully')
+    setCurrentPassword('')
+    setNewPassword('')
+    setConfirmPassword('')
+  }
 
   const auditColumns: Column<AuditLogEntry>[] = [
     { key: 'time', header: 'Timestamp', sortValue: (a) => a.createdAt, render: (a) => formatDateTime(a.createdAt) },
@@ -77,11 +115,11 @@ export function SettingsPage() {
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
-                  <Input label="Full name" defaultValue={user?.name} />
-                  <Input label="Email" type="email" defaultValue={user?.email} />
+                  <Input label="Full name" value={name} onChange={(e) => setName(e.target.value)} />
+                  <Input label="Email" type="email" value={email} onChange={(e) => setEmail(e.target.value)} />
                 </div>
                 <div>
-                  <Button onClick={() => push('Profile changes saved')}>Save changes</Button>
+                  <Button onClick={handleSaveProfile}>Save changes</Button>
                 </div>
               </CardContent>
             </Card>
@@ -94,10 +132,10 @@ export function SettingsPage() {
               </CardHeader>
               <CardContent className="flex flex-col gap-4">
                 <div className="grid grid-cols-2 gap-4">
-                  <Input label="Current password" type="password" placeholder="••••••••" />
+                  <Input label="Current password" type="password" placeholder="••••••••" value={currentPassword} onChange={(e) => setCurrentPassword(e.target.value)} />
                   <div />
-                  <Input label="New password" type="password" placeholder="••••••••" />
-                  <Input label="Confirm new password" type="password" placeholder="••••••••" />
+                  <Input label="New password" type="password" placeholder="••••••••" value={newPassword} onChange={(e) => setNewPassword(e.target.value)} />
+                  <Input label="Confirm new password" type="password" placeholder="••••••••" value={confirmPassword} onChange={(e) => setConfirmPassword(e.target.value)} />
                 </div>
                 <div className="flex items-center gap-2 rounded-lg border border-slate-200 p-3">
                   <KeyRound className="h-4 w-4 text-slate-500" />
@@ -110,7 +148,7 @@ export function SettingsPage() {
                   </Button>
                 </div>
                 <div>
-                  <Button onClick={() => push('Password updated successfully')}>Update password</Button>
+                  <Button onClick={handleUpdatePassword}>Update password</Button>
                 </div>
               </CardContent>
             </Card>

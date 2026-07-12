@@ -14,16 +14,16 @@ import { Input } from '@/components/ui/Input'
 import { Textarea } from '@/components/ui/Textarea'
 import { FileUpload } from '@/components/ui/FileUpload'
 import { LineChartCard, DonutChartCard } from '@/components/ui/ChartCards'
-import { FUEL_LOGS as INITIAL_FUEL, EXPENSES as INITIAL_EXPENSES, vehicleById } from '@/lib/mockData'
+import { useData } from '@/context/DataContext'
 import { formatCurrency, formatDate } from '@/lib/utils'
 import { useToast } from '@/context/ToastContext'
 import type { Expense, ExpenseCategory } from '@/types'
 
 export function FuelExpensesPage() {
   const { push } = useToast()
+  const { fuelLogs, expenses, addExpense: contextAddExpense, vehicleById } = useData()
+
   const [tab, setTab] = useState<'fuel' | 'expenses'>('fuel')
-  const [fuelLogs] = useState(INITIAL_FUEL)
-  const [expenses, setExpenses] = useState<Expense[]>(INITIAL_EXPENSES)
   const [search, setSearch] = useState('')
   const [categoryFilter, setCategoryFilter] = useState<'ALL' | ExpenseCategory>('ALL')
   const [expenseOpen, setExpenseOpen] = useState(false)
@@ -31,7 +31,7 @@ export function FuelExpensesPage() {
 
   const kpis = useMemo(() => {
     const totalFuelCost = fuelLogs.reduce((s, f) => s + f.totalCost, 0)
-    const avgEfficiency = fuelLogs.reduce((s, f) => s + f.efficiencyKmPerL, 0) / fuelLogs.length
+    const avgEfficiency = fuelLogs.length === 0 ? 0 : fuelLogs.reduce((s, f) => s + f.efficiencyKmPerL, 0) / fuelLogs.length
     const anomalies = fuelLogs.filter((f) => f.anomaly).length
     const totalExpenses = expenses.reduce((s, e) => s + e.amount, 0)
     return { totalFuelCost, avgEfficiency, anomalies, totalExpenses }
@@ -113,23 +113,19 @@ export function FuelExpensesPage() {
     },
   ]
 
-  function addExpense(e: FormEvent) {
+  function handleAddExpense(e: FormEvent) {
     e.preventDefault()
     if (!form.vendor) {
       push('Vendor is required', 'error')
       return
     }
-    const expense: Expense = {
-      id: `exp-new-${Date.now()}`,
+    contextAddExpense({
       vehicleId: null,
       category: form.category,
       amount: form.amount,
-      date: new Date().toISOString(),
       vendor: form.vendor,
-      approved: false,
       notes: form.notes,
-    }
-    setExpenses((es) => [expense, ...es])
+    })
     push('Expense recorded and pending approval')
     setExpenseOpen(false)
     setForm({ category: 'Fuel', amount: 2000, vendor: '', notes: '' })
@@ -213,13 +209,13 @@ export function FuelExpensesPage() {
             <Button variant="outline" size="sm" onClick={() => setExpenseOpen(false)}>
               Cancel
             </Button>
-            <Button size="sm" onClick={addExpense as any}>
+            <Button size="sm" onClick={handleAddExpense as any}>
               Save expense
             </Button>
           </>
         }
       >
-        <form onSubmit={addExpense} className="flex flex-col gap-4">
+        <form onSubmit={handleAddExpense} className="flex flex-col gap-4">
           <Select label="Category" value={form.category} onChange={(e) => setForm({ ...form, category: e.target.value as any })}>
             <option>Fuel</option>
             <option>Toll</option>
