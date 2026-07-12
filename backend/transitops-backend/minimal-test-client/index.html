@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<title>TransitOps API - Minimal Test Client</title>
+<style>
+  body { font-family: -apple-system, Arial, sans-serif; max-width: 720px; margin: 40px auto; padding: 0 16px; color: #1e293b; }
+  h1 { color: #1e3a8a; }
+  fieldset { margin-bottom: 20px; padding: 12px; border-radius: 8px; }
+  label { display: block; margin-top: 8px; font-size: 13px; }
+  input, select { width: 100%; padding: 6px; margin-top: 2px; box-sizing: border-box; }
+  button { margin-top: 10px; padding: 8px 14px; background: #1e3a8a; color: white; border: none; border-radius: 6px; cursor: pointer; }
+  pre { background: #0f172a; color: #f1f5f9; padding: 12px; border-radius: 8px; overflow: auto; max-height: 300px; }
+</style>
+</head>
+<body>
+<h1>TransitOps API - Minimal Test Client</h1>
+<p>
+  This is <strong>not</strong> the product frontend - it's a bare-bones page for
+  poking the backend API directly while it's the only thing built (e.g. before the
+  real React app exists, or for quick smoke tests). Point <code>API_BASE</code> below
+  at your running backend.
+</p>
+
+<fieldset>
+  <legend>Config</legend>
+  <label>API Base URL</label>
+  <input id="apiBase" value="http://localhost:4000/api" />
+</fieldset>
+
+<fieldset>
+  <legend>Login</legend>
+  <label>Email</label>
+  <input id="loginEmail" value="manager@transitops.dev" />
+  <label>Password</label>
+  <input id="loginPassword" type="password" value="password123" />
+  <button onclick="login()">Login</button>
+</fieldset>
+
+<fieldset>
+  <legend>Vehicles</legend>
+  <button onclick="listVehicles()">List Vehicles</button>
+</fieldset>
+
+<fieldset>
+  <legend>Dashboard KPIs</legend>
+  <button onclick="dashboard()">Get Dashboard KPIs</button>
+</fieldset>
+
+<fieldset>
+  <legend>Trips</legend>
+  <button onclick="listTrips()">List Trips</button>
+  <label>Trip ID to dispatch</label>
+  <input id="tripId" placeholder="paste a trip id from the list above" />
+  <button onclick="dispatchTrip()">Dispatch Trip (tests the rule engine)</button>
+</fieldset>
+
+<h3>Response</h3>
+<pre id="output">(nothing yet)</pre>
+
+<script>
+  let token = '';
+
+  function base() { return document.getElementById('apiBase').value; }
+  function out(data) { document.getElementById('output').textContent = JSON.stringify(data, null, 2); }
+
+  async function call(path, options = {}) {
+    const res = await fetch(base() + path, {
+      ...options,
+      headers: {
+        'Content-Type': 'application/json',
+        ...(token ? { Authorization: 'Bearer ' + token } : {}),
+        ...(options.headers || {}),
+      },
+    });
+    const data = await res.json().catch(() => ({}));
+    out(data);
+    return data;
+  }
+
+  async function login() {
+    const email = document.getElementById('loginEmail').value;
+    const password = document.getElementById('loginPassword').value;
+    const data = await call('/auth/login', { method: 'POST', body: JSON.stringify({ email, password }) });
+    if (data.token) token = data.token;
+  }
+
+  async function listVehicles() { await call('/vehicles'); }
+  async function dashboard() { await call('/analytics/dashboard'); }
+  async function listTrips() { await call('/trips'); }
+  async function dispatchTrip() {
+    const id = document.getElementById('tripId').value;
+    await call('/trips/' + id + '/dispatch', { method: 'POST' });
+  }
+</script>
+</body>
+</html>
