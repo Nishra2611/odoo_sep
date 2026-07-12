@@ -1,6 +1,5 @@
 import { createContext, useContext, useEffect, useMemo, useState, type ReactNode } from 'react'
 import type { User, Role } from '@/types'
-import { DEMO_ACCOUNTS } from '@/lib/constants'
 import { initials } from '@/lib/utils'
 
 interface AuthContextValue {
@@ -8,7 +7,7 @@ interface AuthContextValue {
   loading: boolean
   error: string | null
   login: (email: string, password: string, role: Role) => Promise<boolean>
-  loginWithGoogle: (role: Role) => Promise<boolean>
+  loginWithGoogle: (accessToken: string, role: Role) => Promise<boolean>
   logout: () => void
 }
 
@@ -31,50 +30,63 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   }, [])
 
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:4000/api'
+
   async function login(email: string, password: string, role: Role): Promise<boolean> {
     setLoading(true)
     setError(null)
-    // Simulated network latency + backend validation against /api/auth/login
-    await new Promise((r) => setTimeout(r, 500))
-    const account = DEMO_ACCOUNTS.find((a) => a.email.toLowerCase() === email.toLowerCase())
-    if (!account || account.password !== password) {
-      setError('Invalid email or password. Try one of the demo accounts below.')
-      setLoading(false)
+    try {
+      const res = await fetch(`${API_URL}/auth/login`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, password }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Login failed')
+      if (data.user.role !== role) throw new Error(`Account role mismatch. Expected ${role}.`)
+
+      const sessionUser: User = {
+        ...data.user,
+        avatarInitials: initials(data.user.name),
+        token: data.token
+      }
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(sessionUser))
+      setUser(sessionUser)
+      return true
+    } catch (err: any) {
+      setError(err.message)
       return false
-    }
-    if (account.role !== role) {
-      setError(`This account is registered as ${account.role.replace('_', ' ')}, not the role selected.`)
+    } finally {
       setLoading(false)
-      return false
     }
-    const sessionUser: User = {
-      id: `user-${account.email}`,
-      name: account.name,
-      email: account.email,
-      role: account.role,
-      avatarInitials: initials(account.name),
-    }
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(sessionUser))
-    setUser(sessionUser)
-    setLoading(false)
-    return true
   }
 
-  async function loginWithGoogle(role: Role): Promise<boolean> {
+  async function loginWithGoogle(accessToken: string, role: Role): Promise<boolean> {
     setLoading(true)
     setError(null)
-    await new Promise((r) => setTimeout(r, 600))
-    const sessionUser: User = {
-      id: 'user-google-demo',
-      name: 'Google Demo User',
-      email: 'demo.google.user@gmail.com',
-      role,
-      avatarInitials: 'GU',
+    try {
+      const res = await fetch(`${API_URL}/auth/google`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ accessToken, role }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || 'Google login failed')
+
+      const sessionUser: User = {
+        ...data.user,
+        avatarInitials: initials(data.user.name),
+        token: data.token
+      }
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(sessionUser))
+      setUser(sessionUser)
+      return true
+    } catch (err: any) {
+      setError(err.message)
+      return false
+    } finally {
+      setLoading(false)
     }
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(sessionUser))
-    setUser(sessionUser)
-    setLoading(false)
-    return true
   }
 
   function logout() {

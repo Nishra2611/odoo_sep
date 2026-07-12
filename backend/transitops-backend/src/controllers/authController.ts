@@ -23,6 +23,19 @@ export async function login(req: AuthRequest, res: Response, next: NextFunction)
   }
 }
 
+export async function googleLogin(req: AuthRequest, res: Response, next: NextFunction) {
+  try {
+    const { accessToken, role } = req.body;
+    if (!accessToken || !role) {
+      return res.status(400).json({ error: 'Missing accessToken or role' });
+    }
+    const result = await authService.loginWithGoogle(accessToken, role);
+    res.status(200).json(result);
+  } catch (err) {
+    next(err);
+  }
+}
+
 export async function me(req: AuthRequest, res: Response, next: NextFunction) {
   try {
     const user = await authService.getMe(req.user!.userId);

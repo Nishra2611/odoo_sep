@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { Navigate, useNavigate, Link } from 'react-router-dom'
 import { Truck, Mail, Lock, Eye, EyeOff } from 'lucide-react'
 import { useAuth } from '@/context/AuthContext'
+import { useGoogleLogin } from '@react-oauth/google'
 import { Input } from '@/components/ui/Input'
 import { Select } from '@/components/ui/Select'
 import { Button } from '@/components/ui/Button'
@@ -26,30 +27,37 @@ export function LoginPage() {
     if (ok) navigate('/dashboard')
   }
 
-  async function handleGoogle() {
-    const ok = await loginWithGoogle(role)
-    if (ok) navigate('/dashboard')
-  }
+  const handleGoogle = useGoogleLogin({
+    onSuccess: async (tokenResponse) => {
+      const ok = await loginWithGoogle(tokenResponse.access_token, role)
+      if (ok) navigate('/dashboard')
+    },
+    onError: () => console.error('Google Login Failed'),
+  })
 
   return (
     <div className="grid min-h-screen lg:grid-cols-2">
-      <div className="hidden flex-col justify-between bg-ink p-10 text-white lg:flex">
-        <div className="flex items-center gap-2.5">
+      <div className="relative hidden flex-col justify-between p-10 text-white lg:flex overflow-hidden">
+        <div className="absolute inset-0 z-0">
+          <img src="https://images.unsplash.com/photo-1519003722824-194d4455a60c?q=80&w=2000&auto=format&fit=crop" alt="Fleet of trucks" className="h-full w-full object-cover" />
+          <div className="absolute inset-0 bg-ink/70 mix-blend-multiply" />
+        </div>
+        <div className="relative z-10 flex items-center gap-2.5">
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-signal">
             <Truck className="h-4 w-4 text-ink" />
           </div>
           <span className="font-display text-lg font-semibold">TransitOps</span>
         </div>
-        <div>
+        <div className="relative z-10">
           <p className="font-display text-3xl font-semibold leading-tight">
             Every dispatch decision, <br /> enforced automatically.
           </p>
-          <p className="mt-4 max-w-md text-sm text-white/60">
+          <p className="mt-4 max-w-md text-sm text-white/90">
             Vehicle and driver eligibility, license expiry, and cargo limits are checked before a trip is
             ever dispatched — not after something goes wrong.
           </p>
         </div>
-        <p className="font-mono text-[11px] text-white/40">TransitOps Control Console · v1.0</p>
+        <p className="relative z-10 font-mono text-[11px] text-white/60">TransitOps Control Console · v1.0</p>
       </div>
 
       <div className="flex items-center justify-center px-6 py-12">
@@ -123,7 +131,7 @@ export function LoginPage() {
               <div className="h-px flex-1 bg-slate-200" /> OR <div className="h-px flex-1 bg-slate-200" />
             </div>
 
-            <Button type="button" variant="outline" onClick={handleGoogle} loading={loading}>
+            <Button type="button" variant="outline" onClick={() => handleGoogle()} loading={loading}>
               Continue with Google
             </Button>
           </form>
