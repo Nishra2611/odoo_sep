@@ -7,7 +7,7 @@ import { DataTable, type Column } from '@/components/ui/DataTable'
 import { StatusBadge } from '@/components/ui/StatusBadge'
 import { Button } from '@/components/ui/Button'
 import { DonutChartCard, BarChartCard } from '@/components/ui/ChartCards'
-import { VEHICLES, DRIVERS, TRIPS, MAINTENANCE_LOGS, vehicleById, driverById } from '@/lib/mockData'
+import { useData } from '@/context/DataContext'
 import { formatDateTime } from '@/lib/utils'
 import type { Trip } from '@/types'
 import { useAuth } from '@/context/AuthContext'
@@ -15,45 +15,46 @@ import { useAuth } from '@/context/AuthContext'
 export function DashboardPage() {
   const navigate = useNavigate()
   const { user } = useAuth()
+  const { vehicles, drivers, trips, maintenanceLogs, vehicleById, driverById } = useData()
 
   const kpis = useMemo(() => {
-    const available = VEHICLES.filter((v) => v.status === 'AVAILABLE').length
-    const active = VEHICLES.filter((v) => v.status === 'ON_TRIP').length
-    const inShop = VEHICLES.filter((v) => v.status === 'IN_SHOP').length
-    const activeTrips = TRIPS.filter((t) => t.status === 'IN_PROGRESS' || t.status === 'DISPATCHED').length
-    const pendingTrips = TRIPS.filter((t) => t.status === 'DRAFT').length
-    const driversOnDuty = DRIVERS.filter((d) => d.status === 'ON_TRIP' || d.status === 'AVAILABLE').length
-    const utilization = Math.round(((active + inShop) / VEHICLES.length) * 100)
+    const available = vehicles.filter((v) => v.status === 'AVAILABLE').length
+    const active = vehicles.filter((v) => v.status === 'ON_TRIP').length
+    const inShop = vehicles.filter((v) => v.status === 'IN_SHOP').length
+    const activeTrips = trips.filter((t) => t.status === 'IN_PROGRESS' || t.status === 'DISPATCHED').length
+    const pendingTrips = trips.filter((t) => t.status === 'DRAFT').length
+    const driversOnDuty = drivers.filter((d) => d.status === 'ON_TRIP' || d.status === 'AVAILABLE').length
+    const utilization = Math.round(((active + inShop) / vehicles.length) * 100)
     return { available, active, inShop, activeTrips, pendingTrips, driversOnDuty, utilization }
-  }, [])
+  }, [vehicles, drivers, trips])
 
-  const recentTrips = useMemo(() => [...TRIPS].slice(0, 8), [])
+  const recentTrips = useMemo(() => [...trips].slice(0, 8), [trips])
 
-  const fleetSplit = [
-    { name: 'Available', value: VEHICLES.filter((v) => v.status === 'AVAILABLE').length },
-    { name: 'On Trip', value: VEHICLES.filter((v) => v.status === 'ON_TRIP').length },
-    { name: 'In Shop', value: VEHICLES.filter((v) => v.status === 'IN_SHOP').length },
-    { name: 'Retired', value: VEHICLES.filter((v) => v.status === 'RETIRED').length },
-  ]
+  const fleetSplit = useMemo(() => [
+    { name: 'Available', value: vehicles.filter((v) => v.status === 'AVAILABLE').length },
+    { name: 'On Trip', value: vehicles.filter((v) => v.status === 'ON_TRIP').length },
+    { name: 'In Shop', value: vehicles.filter((v) => v.status === 'IN_SHOP').length },
+    { name: 'Retired', value: vehicles.filter((v) => v.status === 'RETIRED').length },
+  ], [vehicles])
 
   const maintenanceByMonth = useMemo(() => {
     const buckets: Record<string, number> = {}
-    MAINTENANCE_LOGS.forEach((m) => {
+    maintenanceLogs.forEach((m) => {
       const d = new Date(m.serviceDate)
       const key = d.toLocaleDateString('en-IN', { month: 'short' })
       buckets[key] = (buckets[key] ?? 0) + m.cost
     })
     return Object.entries(buckets).map(([month, cost]) => ({ month, cost }))
-  }, [])
+  }, [maintenanceLogs])
 
-  const columns: Column<Trip>[] = [
+  const columns: Column<Trip>[] = useMemo(() => [
     { key: 'tripCode', header: 'Trip', render: (t) => <span className="font-mono text-xs font-medium">{t.tripCode}</span> },
     { key: 'route', header: 'Route', render: (t) => t.route },
     { key: 'vehicle', header: 'Vehicle', render: (t) => vehicleById(t.vehicleId)?.regNumber ?? '—' },
     { key: 'driver', header: 'Driver', render: (t) => driverById(t.driverId)?.name ?? '—' },
     { key: 'departure', header: 'Departure', render: (t) => formatDateTime(t.departureTime) },
     { key: 'status', header: 'Status', render: (t) => <StatusBadge status={t.status} kind="trip" /> },
-  ]
+  ], [vehicleById, driverById])
 
   return (
     <div className="flex flex-col gap-6">
@@ -81,11 +82,11 @@ export function DashboardPage() {
         <KpiCard label="Fleet utilization" value={`${kpis.utilization}%`} icon={Gauge} accent="route" delta={4} trend="up" />
         <KpiCard
           label="Compliance alerts"
-          value={VEHICLES.filter((v) => v.riskScore > 70).length}
+          value={vehicles.filter((v) => v.riskScore > 70).length}
           icon={AlertTriangle}
           accent="alert"
         />
-        <KpiCard label="Total fleet size" value={VEHICLES.length} icon={Truck} accent="ink" />
+        <KpiCard label="Total fleet size" value={vehicles.length} icon={Truck} accent="ink" />
       </div>
 
       <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">

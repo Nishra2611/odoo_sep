@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { AuthProvider } from '@/context/AuthContext'
 import { ThemeProvider } from '@/context/ThemeContext'
 import { ToastProvider } from '@/context/ToastContext'
+import { DataProvider } from '@/context/DataContext'
 import { AppShell } from '@/components/layout/AppShell'
 import { ProtectedRoute } from '@/components/layout/ProtectedRoute'
 import { LoginPage } from '@/pages/auth/LoginPage'
@@ -23,34 +24,36 @@ export default function App() {
     <ThemeProvider>
       <ToastProvider>
         <AuthProvider>
-          <BrowserRouter>
-            <Routes>
-              <Route path="/login" element={<LoginPage />} />
-              <Route path="/forgot-password" element={<ForgotPasswordPage />} />
+          <DataProvider>
+            <BrowserRouter>
+              <Routes>
+                <Route path="/login" element={<LoginPage />} />
+                <Route path="/forgot-password" element={<ForgotPasswordPage />} />
 
-              <Route
-                element={
-                  <ProtectedRoute>
-                    <AppShell />
-                  </ProtectedRoute>
-                }
-              >
-                <Route path="/dashboard" element={<DashboardPage />} />
-                <Route path="/fleet" element={<FleetListPage />} />
-                <Route path="/drivers" element={<DriversListPage />} />
-                <Route path="/trips" element={<TripsKanbanPage />} />
-                <Route path="/maintenance" element={<MaintenancePage />} />
-                <Route path="/safety" element={<SafetyPage />} />
-                <Route path="/finance" element={<FuelExpensesPage />} />
-                <Route path="/analytics" element={<AnalyticsPage />} />
-                <Route path="/settings" element={<SettingsPage />} />
-                <Route path="/profile" element={<ProfilePage />} />
-              </Route>
+                <Route
+                  element={
+                    <ProtectedRoute>
+                      <AppShell />
+                    </ProtectedRoute>
+                  }
+                >
+                  <Route path="/dashboard" element={<DashboardPage />} />
+                  <Route path="/fleet" element={<FleetListPage />} />
+                  <Route path="/drivers" element={<DriversListPage />} />
+                  <Route path="/trips" element={<TripsKanbanPage />} />
+                  <Route path="/maintenance" element={<MaintenancePage />} />
+                  <Route path="/safety" element={<SafetyPage />} />
+                  <Route path="/finance" element={<FuelExpensesPage />} />
+                  <Route path="/analytics" element={<AnalyticsPage />} />
+                  <Route path="/settings" element={<SettingsPage />} />
+                  <Route path="/profile" element={<ProfilePage />} />
+                </Route>
 
-              <Route path="/" element={<Navigate to="/dashboard" replace />} />
-              <Route path="*" element={<NotFoundPage />} />
-            </Routes>
-          </BrowserRouter>
+                <Route path="/" element={<Navigate to="/dashboard" replace />} />
+                <Route path="*" element={<NotFoundPage />} />
+              </Routes>
+            </BrowserRouter>
+          </DataProvider>
         </AuthProvider>
       </ToastProvider>
     </ThemeProvider>

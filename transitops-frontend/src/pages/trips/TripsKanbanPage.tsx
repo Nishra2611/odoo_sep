@@ -5,7 +5,7 @@ import { Badge } from '@/components/ui/Badge'
 import { SearchInput } from '@/components/ui/SearchInput'
 import { Select } from '@/components/ui/Select'
 import { TripFormDrawer } from './TripFormDrawer'
-import { TRIPS as INITIAL_TRIPS, VEHICLES as INITIAL_VEHICLES, DRIVERS as INITIAL_DRIVERS, vehicleById, driverById } from '@/lib/mockData'
+import { useData } from '@/context/DataContext'
 import { formatDateTime, daysUntil, cn } from '@/lib/utils'
 import { useToast } from '@/context/ToastContext'
 import type { Trip, TripStatus, Vehicle, Driver } from '@/types'
@@ -21,9 +21,7 @@ const COLUMNS: { key: TripStatus; label: string }[] = [
 
 export function TripsKanbanPage() {
   const { push } = useToast()
-  const [trips, setTrips] = useState<Trip[]>(INITIAL_TRIPS)
-  const [vehicles, setVehicles] = useState<Vehicle[]>(INITIAL_VEHICLES)
-  const [drivers, setDrivers] = useState<Driver[]>(INITIAL_DRIVERS)
+  const { trips, vehicles, drivers, vehicleById, driverById, createTrip, moveTrip } = useData()
   const [search, setSearch] = useState('')
   const [priorityFilter, setPriorityFilter] = useState<'ALL' | Trip['priority']>('ALL')
   const [drawerOpen, setDrawerOpen] = useState(false)
@@ -55,7 +53,7 @@ export function TripsKanbanPage() {
     return null
   }
 
-  function moveTrip(tripId: string, target: TripStatus) {
+  function handleMoveTrip(tripId: string, target: TripStatus) {
     const trip = trips.find((t) => t.id === tripId)
     if (!trip || trip.status === target) return
 
@@ -65,44 +63,31 @@ export function TripsKanbanPage() {
         push(`Dispatch rejected: ${error}`, 'error')
         return
       }
-      if (trip.vehicleId) setVehicles((vs) => vs.map((v) => (v.id === trip.vehicleId ? { ...v, status: 'ON_TRIP' } : v)))
-      if (trip.driverId) setDrivers((ds) => ds.map((d) => (d.id === trip.driverId ? { ...d, status: 'ON_TRIP' } : d)))
       push(`${trip.tripCode} dispatched successfully`)
     }
 
     if (target === 'COMPLETED') {
-      if (trip.vehicleId) setVehicles((vs) => vs.map((v) => (v.id === trip.vehicleId ? { ...v, status: 'AVAILABLE', odometerKm: v.odometerKm + trip.estDistanceKm } : v)))
-      if (trip.driverId) setDrivers((ds) => ds.map((d) => (d.id === trip.driverId ? { ...d, status: 'AVAILABLE' } : d)))
       push(`${trip.tripCode} marked completed — odometer and availability updated`)
     }
 
     if (target === 'CANCELLED' && (trip.status === 'DISPATCHED' || trip.status === 'IN_PROGRESS')) {
-      if (trip.vehicleId) setVehicles((vs) => vs.map((v) => (v.id === trip.vehicleId ? { ...v, status: 'AVAILABLE' } : v)))
-      if (trip.driverId) setDrivers((ds) => ds.map((d) => (d.id === trip.driverId ? { ...d, status: 'AVAILABLE' } : d)))
       push(`${trip.tripCode} cancelled — vehicle and driver released`, 'info')
     } else if (target === 'CANCELLED') {
       push(`${trip.tripCode} cancelled`, 'info')
     }
 
-    setTrips((ts) => ts.map((t) => (t.id === tripId ? { ...t, status: target } : t)))
+    moveTrip(tripId, target)
   }
 
   function onDrop(e: DragEvent<HTMLDivElement>, target: TripStatus) {
     e.preventDefault()
-    if (dragTripId) moveTrip(dragTripId, target)
+    if (dragTripId) handleMoveTrip(dragTripId, target)
     setDragTripId(null)
   }
 
-  function createTrip(data: Omit<Trip, 'id' | 'tripCode' | 'status' | 'actualArrival'>) {
-    const trip: Trip = {
-      ...data,
-      id: `trip-new-${Date.now()}`,
-      tripCode: `TRP-${2400 + trips.length + 1}`,
-      status: 'DRAFT',
-      actualArrival: null,
-    }
-    setTrips((ts) => [trip, ...ts])
-    push(`${trip.tripCode} created as draft`)
+  function handleCreateTrip(data: Omit<Trip, 'id' | 'tripCode' | 'status' | 'actualArrival'>) {
+    createTrip(data)
+    push(`Trip created as draft`)
   }
 
   return (
@@ -213,7 +198,7 @@ export function TripsKanbanPage() {
         })}
       </div>
 
-      <TripFormDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} onCreate={createTrip} vehicles={vehicles} drivers={drivers} />
+      <TripFormDrawer open={drawerOpen} onClose={() => setDrawerOpen(false)} onCreate={handleCreateTrip} vehicles={vehicles} drivers={drivers} />
     </div>
   )
 }

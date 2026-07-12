@@ -50,7 +50,7 @@ export const NAV_ITEMS: NavItem[] = [
     label: 'Maintenance',
     path: '/maintenance',
     icon: 'Wrench',
-    roles: ['FLEET_MANAGER', 'SAFETY_OFFICER'],
+    roles: ['FLEET_MANAGER', 'SAFETY_OFFICER', 'DISPATCHER'],
   },
   {
     key: 'safety',
