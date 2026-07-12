@@ -34,7 +34,7 @@ export async function signup(name: string, email: string, password: string, role
 
 export async function login(email: string, password: string) {
   const user = await prisma.user.findUnique({ where: { email } });
-  if (!user) throw new AppError('Invalid credentials', 401);
+  if (!user || !user.password) throw new AppError('Invalid credentials', 401);
 
   const valid = await comparePassword(password, user.password);
   if (!valid) throw new AppError('Invalid credentials', 401);
