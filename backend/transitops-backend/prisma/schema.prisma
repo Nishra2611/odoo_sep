@@ -128,3 +128,24 @@ model Expense {
   note      String?
   loggedAt  DateTime @default(now())
 }
+
+model AuditLog {
+  id         String   @id @default(uuid())
+  entityType String   // "Trip" | "Vehicle" | "Driver"
+  entityId   String
+  action     String   // "DISPATCH_REJECTED" | "DISPATCH_SUCCESS" | "STATUS_CHANGE"
+  reason     String?
+  performedBy String
+  metadata   Json?
+  createdAt  DateTime @default(now())
+}
+
+model ComplianceDocument {
+  id         String   @id @default(uuid())
+  vehicleId  String?
+  driverId   String?
+  type       String   // "INSURANCE" | "PUC" | "PERMIT" | "FITNESS" | "LICENSE"
+  expiryDate DateTime
+  documentUrl String?
+  createdAt  DateTime @default(now())
+}
