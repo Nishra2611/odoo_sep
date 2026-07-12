@@ -12,16 +12,30 @@ import { ConfirmDialog } from '@/components/ui/ConfirmDialog'
 import { Drawer } from '@/components/ui/Drawer'
 import { ProgressBar } from '@/components/ui/ProgressBar'
 import { FleetFormModal } from './FleetFormModal'
-import { VEHICLES as INITIAL_VEHICLES, MAINTENANCE_LOGS, driverById } from '@/lib/mockData'
+import { Modal } from '@/components/ui/Modal'
+import { Input } from '@/components/ui/Input'
+import { Textarea } from '@/components/ui/Textarea'
+import { useData } from '@/context/DataContext'
 import { formatCurrency, formatDate, formatNumber } from '@/lib/utils'
 import { useToast } from '@/context/ToastContext'
-import type { Vehicle, VehicleStatus } from '@/types'
+import type { Vehicle, VehicleStatus, MaintenanceLog } from '@/types'
 
 const PAGE_SIZE = 8
 
 export function FleetListPage() {
   const { push } = useToast()
-  const [vehicles, setVehicles] = useState<Vehicle[]>(INITIAL_VEHICLES)
+  const {
+    vehicles,
+    drivers,
+    maintenanceLogs,
+    addVehicle,
+    updateVehicle,
+    deleteVehicle,
+    driverById,
+    assignDriverToVehicle,
+    scheduleMaintenance,
+  } = useData()
+
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState<'ALL' | VehicleStatus>('ALL')
   const [typeFilter, setTypeFilter] = useState<'ALL' | Vehicle['type']>('ALL')
@@ -30,6 +44,19 @@ export function FleetListPage() {
   const [editing, setEditing] = useState<Vehicle | null>(null)
   const [deleting, setDeleting] = useState<Vehicle | null>(null)
   const [detail, setDetail] = useState<Vehicle | null>(null)
+
+  // Assign Driver State
+  const [assigningVehicle, setAssigningVehicle] = useState<Vehicle | null>(null)
+  const [selectedDriverId, setSelectedDriverId] = useState<string>('')
+
+  // Maintenance State
+  const [maintenancingVehicle, setMaintenancingVehicle] = useState<Vehicle | null>(null)
+  const [maintenanceForm, setMaintenanceForm] = useState({
+    serviceType: 'Preventive' as MaintenanceLog['serviceType'],
+    workshop: '',
+    cost: 5000,
+    notes: '',
+  })
 
   const filtered = useMemo(() => {
     return vehicles.filter((v) => {
@@ -46,23 +73,14 @@ export function FleetListPage() {
 
   function handleAdd(data: Omit<Vehicle, 'id' | 'status' | 'assignedDriverId' | 'odometerKm' | 'lastServiceDate' | 'gpsStatus' | 'riskScore'>) {
     if (editing) {
-      setVehicles((vs) => vs.map((v) => (v.id === editing.id ? { ...v, ...data } : v)))
+      updateVehicle({ ...editing, ...data })
       push(`${data.regNumber} updated successfully`)
       setEditing(null)
     } else {
-      const vehicle: Vehicle = {
-        ...data,
-        id: `veh-new-${Date.now()}`,
-        status: 'AVAILABLE',
-        assignedDriverId: null,
-        odometerKm: 0,
-        lastServiceDate: new Date().toISOString(),
-        gpsStatus: 'NOT_FITTED',
-        riskScore: 10,
-      }
-      setVehicles((vs) => [vehicle, ...vs])
-      push(`${vehicle.regNumber} added to the fleet`)
+      addVehicle(data)
+      push(`${data.regNumber} added to the fleet`)
     }
+    setFormOpen(false)
   }
 
   function handleDelete() {
@@ -71,8 +89,9 @@ export function FleetListPage() {
       push('Cannot remove a vehicle that is currently on a trip', 'error')
       return
     }
-    setVehicles((vs) => vs.filter((v) => v.id !== deleting.id))
+    deleteVehicle(deleting.id)
     push(`${deleting.regNumber} removed from the fleet`, 'info')
+    setDeleting(null)
   }
 
   function retireVehicle(v: Vehicle) {
@@ -80,8 +99,39 @@ export function FleetListPage() {
       push('This vehicle is on an active trip and cannot be retired right now', 'error')
       return
     }
-    setVehicles((vs) => vs.map((x) => (x.id === v.id ? { ...x, status: 'RETIRED' } : x)))
+    updateVehicle({ ...v, status: 'RETIRED' })
     push(`${v.regNumber} marked as retired`, 'info')
+    if (detail?.id === v.id) {
+      setDetail({ ...v, status: 'RETIRED' })
+    }
+  }
+
+  const eligibleDrivers = useMemo(() => {
+    if (!assigningVehicle) return []
+    return drivers.filter(
+      (d) => d.status === 'AVAILABLE' || d.id === assigningVehicle.assignedDriverId
+    )
+  }, [drivers, assigningVehicle])
+
+  function handleAssignSave() {
+    if (!assigningVehicle) return
+    assignDriverToVehicle(assigningVehicle.id, selectedDriverId || null)
+    push(`Driver assignment updated for ${assigningVehicle.regNumber}`)
+    setAssigningVehicle(null)
+  }
+
+  function handleMaintenanceSave(e: React.FormEvent) {
+    e.preventDefault()
+    if (!maintenancingVehicle) return
+    scheduleMaintenance({
+      vehicleId: maintenancingVehicle.id,
+      serviceType: maintenanceForm.serviceType,
+      workshop: maintenanceForm.workshop || 'Fleet Depot Workshop',
+      cost: Number(maintenanceForm.cost),
+      notes: maintenanceForm.notes,
+    })
+    push(`Scheduled maintenance for ${maintenancingVehicle.regNumber}`)
+    setMaintenancingVehicle(null)
   }
 
   const columns: Column<Vehicle>[] = [
@@ -137,10 +187,20 @@ export function FleetListPage() {
           >
             <Pencil className="h-3.5 w-3.5" /> Edit
           </DropdownItem>
-          <DropdownItem onClick={() => push(`Assign driver flow opened for ${v.regNumber}`, 'info')}>
+          <DropdownItem
+            onClick={() => {
+              setAssigningVehicle(v)
+              setSelectedDriverId(v.assignedDriverId || '')
+            }}
+          >
             <UserPlus className="h-3.5 w-3.5" /> Assign driver
           </DropdownItem>
-          <DropdownItem onClick={() => push(`Maintenance scheduling opened for ${v.regNumber}`, 'info')}>
+          <DropdownItem
+            onClick={() => {
+              setMaintenancingVehicle(v)
+              setMaintenanceForm({ serviceType: 'Preventive', workshop: '', cost: 5000, notes: '' })
+            }}
+          >
             <Wrench className="h-3.5 w-3.5" /> Schedule maintenance
           </DropdownItem>
           <DropdownItem onClick={() => setDetail(v)}>
@@ -241,13 +301,13 @@ export function FleetListPage() {
             <div>
               <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">Service history</p>
               <ul className="flex flex-col gap-2">
-                {MAINTENANCE_LOGS.filter((m) => m.vehicleId === detail.id).slice(0, 5).map((m) => (
+                {maintenanceLogs.filter((m: MaintenanceLog) => m.vehicleId === detail.id).slice(0, 5).map((m: MaintenanceLog) => (
                   <li key={m.id} className="flex items-center justify-between rounded-lg border border-slate-100 px-3 py-2 text-xs">
                     <span>{m.serviceType} · {m.workshop}</span>
                     <span className="text-slate-400">{formatDate(m.serviceDate)}</span>
                   </li>
                 ))}
-                {MAINTENANCE_LOGS.filter((m) => m.vehicleId === detail.id).length === 0 && (
+                {maintenanceLogs.filter((m: MaintenanceLog) => m.vehicleId === detail.id).length === 0 && (
                   <p className="text-xs text-slate-400">No service records yet.</p>
                 )}
               </ul>
@@ -260,6 +320,93 @@ export function FleetListPage() {
           </div>
         )}
       </Drawer>
+
+      {/* Assign Driver Modal */}
+      <Modal
+        open={!!assigningVehicle}
+        onClose={() => setAssigningVehicle(null)}
+        title={`Assign Driver to ${assigningVehicle?.regNumber}`}
+        footer={
+          <>
+            <Button variant="outline" size="sm" onClick={() => setAssigningVehicle(null)}>
+              Cancel
+            </Button>
+            <Button size="sm" onClick={handleAssignSave}>
+              Save assignment
+            </Button>
+          </>
+        }
+      >
+        <div className="flex flex-col gap-4">
+          <Select
+            label="Select Driver"
+            value={selectedDriverId}
+            onChange={(e) => setSelectedDriverId(e.target.value)}
+          >
+            <option value="">Unassigned</option>
+            {eligibleDrivers.map((d) => (
+              <option key={d.id} value={d.id}>
+                {d.name} ({d.status.toLowerCase()})
+              </option>
+            ))}
+          </Select>
+          {assigningVehicle?.assignedDriverId && !selectedDriverId && (
+            <p className="text-xs text-alert font-medium">
+              Note: Saving will unassign the current driver.
+            </p>
+          )}
+        </div>
+      </Modal>
+
+      {/* Schedule Maintenance Modal */}
+      <Modal
+        open={!!maintenancingVehicle}
+        onClose={() => setMaintenancingVehicle(null)}
+        title={`Schedule Maintenance for ${maintenancingVehicle?.regNumber}`}
+        footer={
+          <>
+            <Button variant="outline" size="sm" onClick={() => setMaintenancingVehicle(null)}>
+              Cancel
+            </Button>
+            <Button size="sm" onClick={handleMaintenanceSave as any}>
+              Schedule service
+            </Button>
+          </>
+        }
+      >
+        <form onSubmit={handleMaintenanceSave} className="flex flex-col gap-4">
+          <Select
+            label="Service Type"
+            value={maintenanceForm.serviceType}
+            onChange={(e) => setMaintenanceForm({ ...maintenanceForm, serviceType: e.target.value as any })}
+          >
+            <option>Preventive</option>
+            <option>Corrective</option>
+            <option>Inspection</option>
+            <option>Tyre</option>
+            <option>Engine</option>
+            <option>Electrical</option>
+          </Select>
+          <Input
+            label="Workshop"
+            value={maintenanceForm.workshop}
+            onChange={(e) => setMaintenanceForm({ ...maintenanceForm, workshop: e.target.value })}
+            placeholder="e.g. Main Depot Workshop"
+          />
+          <Input
+            label="Estimated Cost (₹)"
+            type="number"
+            value={maintenanceForm.cost}
+            onChange={(e) => setMaintenanceForm({ ...maintenanceForm, cost: Number(e.target.value) })}
+          />
+          <Textarea
+            label="Notes"
+            value={maintenanceForm.notes}
+            onChange={(e) => setMaintenanceForm({ ...maintenanceForm, notes: e.target.value })}
+            placeholder="Describe issues/notes..."
+          />
+        </form>
+      </Modal>
     </div>
   )
 }

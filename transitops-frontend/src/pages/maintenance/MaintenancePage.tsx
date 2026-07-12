@@ -14,7 +14,7 @@ import { Modal } from '@/components/ui/Modal'
 import { Input } from '@/components/ui/Input'
 import { Textarea } from '@/components/ui/Textarea'
 import { BarChartCard } from '@/components/ui/ChartCards'
-import { MAINTENANCE_LOGS as INITIAL_LOGS, VEHICLES as INITIAL_VEHICLES, vehicleById } from '@/lib/mockData'
+import { useData } from '@/context/DataContext'
 import { formatCurrency, formatDate } from '@/lib/utils'
 import { useToast } from '@/context/ToastContext'
 import type { MaintenanceLog, MaintenanceStatus, Vehicle } from '@/types'
@@ -23,8 +23,14 @@ const PAGE_SIZE = 8
 
 export function MaintenancePage() {
   const { push } = useToast()
-  const [logs, setLogs] = useState<MaintenanceLog[]>(INITIAL_LOGS)
-  const [vehicles, setVehicles] = useState<Vehicle[]>(INITIAL_VEHICLES)
+  const {
+    vehicles,
+    maintenanceLogs: logs,
+    scheduleMaintenance,
+    completeMaintenance,
+    cancelMaintenance,
+    vehicleById,
+  } = useData()
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState<'ALL' | MaintenanceStatus>('ALL')
   const [page, setPage] = useState(1)
@@ -61,45 +67,32 @@ export function MaintenancePage() {
     return Object.entries(buckets).map(([serviceType, cost]) => ({ serviceType, cost }))
   }, [logs])
 
-  function scheduleMaintenance(e: FormEvent) {
+  function handleSchedule(e: FormEvent) {
     e.preventDefault()
     if (!form.vehicleId) {
       push('Select a vehicle to schedule maintenance for', 'error')
       return
     }
     const vehicle = vehicleById(form.vehicleId)
-    const log: MaintenanceLog = {
-      id: `mnt-new-${Date.now()}`,
+    scheduleMaintenance({
       vehicleId: form.vehicleId,
       serviceType: form.serviceType,
-      mechanic: 'Unassigned',
       workshop: form.workshop || 'To be confirmed',
       cost: form.cost,
-      mileageKm: vehicle?.odometerKm ?? 0,
-      serviceDate: new Date().toISOString(),
-      completionDate: null,
-      partsUsed: [],
-      warranty: '—',
-      status: 'SCHEDULED',
-      approved: false,
       notes: form.notes,
-    }
-    setLogs((ls) => [log, ...ls])
-    setVehicles((vs) => vs.map((v) => (v.id === form.vehicleId ? { ...v, status: 'IN_SHOP' } : v)))
+    })
     push(`Maintenance scheduled for ${vehicle?.regNumber} — vehicle marked unavailable for dispatch`)
     setFormOpen(false)
     setForm({ vehicleId: '', serviceType: 'Preventive', workshop: '', cost: 5000, notes: '' })
   }
 
-  function completeMaintenance(log: MaintenanceLog) {
-    setLogs((ls) => ls.map((l) => (l.id === log.id ? { ...l, status: 'COMPLETED', completionDate: new Date().toISOString(), approved: true } : l)))
-    setVehicles((vs) => vs.map((v) => (v.id === log.vehicleId ? { ...v, status: 'AVAILABLE', lastServiceDate: new Date().toISOString() } : v)))
+  function handleComplete(log: MaintenanceLog) {
+    completeMaintenance(log.id)
     push(`Maintenance completed — ${vehicleById(log.vehicleId)?.regNumber} is available for dispatch again`)
   }
 
-  function cancelMaintenance(log: MaintenanceLog) {
-    setLogs((ls) => ls.map((l) => (l.id === log.id ? { ...l, status: 'CANCELLED' } : l)))
-    setVehicles((vs) => vs.map((v) => (v.id === log.vehicleId && v.status === 'IN_SHOP' ? { ...v, status: 'AVAILABLE' } : v)))
+  function handleCancel(log: MaintenanceLog) {
+    cancelMaintenance(log.id)
     push('Maintenance work order cancelled', 'info')
   }
 
@@ -137,10 +130,10 @@ export function MaintenancePage() {
         >
           {l.status !== 'COMPLETED' && l.status !== 'CANCELLED' && (
             <>
-              <DropdownItem onClick={() => completeMaintenance(l)}>
+              <DropdownItem onClick={() => handleComplete(l)}>
                 <CheckCircle2 className="h-3.5 w-3.5" /> Mark completed
               </DropdownItem>
-              <DropdownItem onClick={() => cancelMaintenance(l)} danger>
+              <DropdownItem onClick={() => handleCancel(l)} danger>
                 <Ban className="h-3.5 w-3.5" /> Cancel work order
               </DropdownItem>
             </>
@@ -200,13 +193,13 @@ export function MaintenancePage() {
             <Button variant="outline" size="sm" onClick={() => setFormOpen(false)}>
               Cancel
             </Button>
-            <Button size="sm" onClick={scheduleMaintenance as any}>
+            <Button size="sm" onClick={handleSchedule as any}>
               Schedule
             </Button>
           </>
         }
       >
-        <form onSubmit={scheduleMaintenance} className="flex flex-col gap-4">
+        <form onSubmit={handleSchedule} className="flex flex-col gap-4">
           <Select label="Vehicle" value={form.vehicleId} onChange={(e) => setForm({ ...form, vehicleId: e.target.value })}>
             <option value="">Select a vehicle…</option>
             {vehicles.filter((v) => v.status !== 'RETIRED' && v.status !== 'IN_SHOP').map((v) => (

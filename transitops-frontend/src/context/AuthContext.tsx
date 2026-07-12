@@ -9,6 +9,7 @@ interface AuthContextValue {
   login: (email: string, password: string, role: Role) => Promise<boolean>
   loginWithGoogle: (accessToken: string, role: Role) => Promise<boolean>
   logout: () => void
+  updateProfile: (name: string, email: string) => void
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined)
@@ -94,7 +95,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null)
   }
 
-  const value = useMemo(() => ({ user, loading, error, login, loginWithGoogle, logout }), [user, loading, error])
+  function updateProfile(name: string, email: string) {
+    if (!user) return
+    const updated: User = {
+      ...user,
+      name,
+      email,
+      avatarInitials: initials(name),
+    }
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(updated))
+    setUser(updated)
+  }
+
+  const value = useMemo(() => ({ user, loading, error, login, loginWithGoogle, logout, updateProfile }), [user, loading, error])
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }

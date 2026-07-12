@@ -16,7 +16,7 @@ import { Textarea } from '@/components/ui/Textarea'
 import { FileUpload } from '@/components/ui/FileUpload'
 import { LineChartCard } from '@/components/ui/ChartCards'
 import { Dropdown, DropdownItem } from '@/components/ui/Dropdown'
-import { SAFETY_INCIDENTS as INITIAL_INCIDENTS, COMPLIANCE_DOCUMENTS, vehicleById, driverById } from '@/lib/mockData'
+import { useData } from '@/context/DataContext'
 import { formatDate, daysUntil } from '@/lib/utils'
 import { useToast } from '@/context/ToastContext'
 import { SEVERITY_STYLES } from '@/lib/constants'
@@ -24,8 +24,16 @@ import type { SafetyIncident, IncidentSeverity } from '@/types'
 
 export function SafetyPage() {
   const { push } = useToast()
+  const {
+    safetyIncidents: incidents,
+    complianceDocuments: COMPLIANCE_DOCUMENTS,
+    logIncident,
+    resolveIncident,
+    vehicleById,
+    driverById,
+  } = useData()
+
   const [tab, setTab] = useState<'incidents' | 'compliance'>('incidents')
-  const [incidents, setIncidents] = useState<SafetyIncident[]>(INITIAL_INCIDENTS)
   const [search, setSearch] = useState('')
   const [severityFilter, setSeverityFilter] = useState<'ALL' | IncidentSeverity>('ALL')
   const [logOpen, setLogOpen] = useState(false)
@@ -37,7 +45,7 @@ export function SafetyPage() {
     const expiredDocs = COMPLIANCE_DOCUMENTS.filter((d) => d.status === 'EXPIRED').length
     const expiringSoon = COMPLIANCE_DOCUMENTS.filter((d) => d.status === 'EXPIRING_SOON').length
     return { open, critical, expiredDocs, expiringSoon }
-  }, [incidents])
+  }, [incidents, COMPLIANCE_DOCUMENTS])
 
   const trendData = useMemo(() => {
     const buckets: Record<string, number> = {}
@@ -74,10 +82,10 @@ export function SafetyPage() {
             </button>
           }
         >
-          {i.status !== 'CLOSED' && (
+          {i.status !== 'RESOLVED' && i.status !== 'CLOSED' && (
             <DropdownItem
               onClick={() => {
-                setIncidents((is) => is.map((x) => (x.id === i.id ? { ...x, status: 'RESOLVED' } : x)))
+                resolveIncident(i.id)
                 push(`Incident marked resolved`)
               }}
             >
@@ -118,25 +126,20 @@ export function SafetyPage() {
     },
   ]
 
-  function logIncident(e: FormEvent) {
+  function handleLogIncident(e: FormEvent) {
     e.preventDefault()
     if (!form.location || !form.description) {
       push('Location and description are required', 'error')
       return
     }
-    const incident: SafetyIncident = {
-      id: `inc-new-${Date.now()}`,
+    logIncident({
       vehicleId: null,
       driverId: null,
       type: form.type,
       severity: form.severity,
-      status: 'OPEN',
-      date: new Date().toISOString(),
       location: form.location,
       description: form.description,
-      correctiveAction: 'Pending review',
-    }
-    setIncidents((is) => [incident, ...is])
+    })
     push('Incident logged and assigned for investigation')
     setLogOpen(false)
     setForm({ type: 'Violation', severity: 'MODERATE', location: '', description: '' })
@@ -205,13 +208,13 @@ export function SafetyPage() {
             <Button variant="outline" size="sm" onClick={() => setLogOpen(false)}>
               Cancel
             </Button>
-            <Button size="sm" onClick={logIncident as any}>
+            <Button size="sm" onClick={handleLogIncident as any}>
               Log incident
             </Button>
           </>
         }
       >
-        <form onSubmit={logIncident} className="flex flex-col gap-4">
+        <form onSubmit={handleLogIncident} className="flex flex-col gap-4">
           <Select label="Type" value={form.type} onChange={(e) => setForm({ ...form, type: e.target.value as any })}>
             <option>Accident</option>
             <option>Violation</option>

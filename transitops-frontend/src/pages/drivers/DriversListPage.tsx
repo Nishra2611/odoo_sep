@@ -14,7 +14,7 @@ import { Avatar } from '@/components/ui/Avatar'
 import { ProgressBar } from '@/components/ui/ProgressBar'
 import { FileUpload } from '@/components/ui/FileUpload'
 import { DriverFormModal } from './DriverFormModal'
-import { DRIVERS as INITIAL_DRIVERS, SAFETY_INCIDENTS, vehicleById } from '@/lib/mockData'
+import { useData } from '@/context/DataContext'
 import { formatDate, initials } from '@/lib/utils'
 import { useToast } from '@/context/ToastContext'
 import type { Driver, DriverStatus } from '@/types'
@@ -23,7 +23,7 @@ const PAGE_SIZE = 8
 
 export function DriversListPage() {
   const { push } = useToast()
-  const [drivers, setDrivers] = useState<Driver[]>(INITIAL_DRIVERS)
+  const { drivers, safetyIncidents, vehicleById, addDriver, updateDriver, deleteDriver } = useData()
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState<'ALL' | DriverStatus>('ALL')
   const [page, setPage] = useState(1)
@@ -46,36 +46,29 @@ export function DriversListPage() {
 
   function handleSave(data: Omit<Driver, 'id' | 'status' | 'assignedVehicleId' | 'safetyRating' | 'tripCompletionPct' | 'joinedDate' | 'certifications' | 'violationsCount' | 'attendancePct'>) {
     if (editing) {
-      setDrivers((ds) => ds.map((d) => (d.id === editing.id ? { ...d, ...data } : d)))
+      updateDriver({ ...editing, ...data })
       push(`${data.name}'s profile updated`)
       setEditing(null)
     } else {
-      const driver: Driver = {
-        ...data,
-        id: `drv-new-${Date.now()}`,
-        status: 'AVAILABLE',
-        assignedVehicleId: null,
-        safetyRating: 4.5,
-        tripCompletionPct: 100,
-        joinedDate: new Date().toISOString(),
-        certifications: [],
-        violationsCount: 0,
-        attendancePct: 100,
-      }
-      setDrivers((ds) => [driver, ...ds])
-      push(`${driver.name} added to the driver roster`)
+      addDriver(data)
+      push(`${data.name} added to the driver roster`)
     }
+    setFormOpen(false)
   }
 
   function suspendDriver() {
     if (!suspending) return
-    setDrivers((ds) => ds.map((d) => (d.id === suspending.id ? { ...d, status: 'SUSPENDED' } : d)))
+    updateDriver({ ...suspending, status: 'SUSPENDED' })
     push(`${suspending.name} suspended — no new trips can be assigned`, 'error')
+    setSuspending(null)
   }
 
   function reinstateDriver(d: Driver) {
-    setDrivers((ds) => ds.map((x) => (x.id === d.id ? { ...x, status: 'AVAILABLE' } : x)))
+    updateDriver({ ...d, status: 'AVAILABLE' })
     push(`${d.name} reinstated and available for dispatch`)
+    if (detail?.id === d.id) {
+      setDetail({ ...d, status: 'AVAILABLE' })
+    }
   }
 
   const columns: Column<Driver>[] = [
@@ -219,8 +212,11 @@ export function DriversListPage() {
         open={!!deleting}
         onClose={() => setDeleting(null)}
         onConfirm={() => {
-          setDrivers((ds) => ds.filter((d) => d.id !== deleting?.id))
-          push(`${deleting?.name} removed from the roster`, 'info')
+          if (deleting) {
+            deleteDriver(deleting.id)
+            push(`${deleting.name} removed from the roster`, 'info')
+          }
+          setDeleting(null)
         }}
         title="Remove driver"
         description={`Are you sure you want to remove ${deleting?.name}? This cannot be undone.`}
@@ -262,13 +258,13 @@ export function DriversListPage() {
             <div>
               <p className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-400">Recent incidents</p>
               <ul className="flex flex-col gap-2">
-                {SAFETY_INCIDENTS.filter((i) => i.driverId === detail.id).slice(0, 3).map((i) => (
+                {safetyIncidents.filter((i) => i.driverId === detail.id).slice(0, 3).map((i) => (
                   <li key={i.id} className="flex items-center justify-between rounded-lg border border-slate-100 px-3 py-2 text-xs">
                     <span>{i.type}</span>
                     <span className="text-slate-400">{formatDate(i.date)}</span>
                   </li>
                 ))}
-                {SAFETY_INCIDENTS.filter((i) => i.driverId === detail.id).length === 0 && (
+                {safetyIncidents.filter((i) => i.driverId === detail.id).length === 0 && (
                   <p className="text-xs text-slate-400">No incidents on file.</p>
                 )}
               </ul>
